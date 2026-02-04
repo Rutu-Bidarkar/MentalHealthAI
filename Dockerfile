@@ -1,7 +1,22 @@
-FROM nginx:alpine
+FROM python:3.9-slim
+WORKDIR /app
 
-COPY build/web /usr/share/nginx/html
+# Install system dependencies for psycopg2
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 80
+# Copy requirements and install Python packages
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["nginx", "-g", "daemon off;"]
+# Copy application code
+COPY . .
+
+# Set environment variables
+ENV FLASK_APP=run.py
+ENV PYTHONPATH=/app
+
+# Run the application
+CMD ["python", "run.py"]
