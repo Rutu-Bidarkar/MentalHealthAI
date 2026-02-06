@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
-import 'constants/app_theme.dart';
-import 'screens/onboarding/landing1.dart';
+import 'package:provider/provider.dart';
+import 'screens/Auth/login.dart';
+import 'screens/Auth/signup.dart';
+import 'screens/dynamictest.dart';
+import 'screens/home.dart';
+import 'screens/landing1.dart';
+import 'screens/Tests.dart';
+import 'screens/test_results_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => TestResultsProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -12,9 +23,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Mental Health AI',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'Inter',
+      ),
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const Landing1(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const Landing1(),
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(),
+        '/home': (context) => const HomeScreen(),
+        '/tests': (context) => TestsPage(),
+        '/test/baseline': (context) => const DynamicTestPage(testId: 'baseline'),
+        '/test/anxiety': (context) => const DynamicTestPage(testId: 'anxiety-screening'),
+        '/test/depression': (context) => const DynamicTestPage(testId: 'depression-screening'),
+        '/test/stress': (context) => const DynamicTestPage(testId: 'stress-resilience'),
+        // Placeholder for profile page to prevent navigation errors
+        '/profile': (context) => Scaffold(
+          appBar: AppBar(title: const Text('Profile')),
+          body: const Center(child: Text('Profile Page')),
+        ),
+      },
     );
   }
 }

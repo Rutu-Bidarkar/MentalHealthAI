@@ -274,11 +274,9 @@ class _LoginPageState extends State<LoginPage> {
                         shape: BoxShape.circle,
                         boxShadow: [AppTheme.shadows.card],
                       ),
-                      child: const Center(
-                        child: Text(
-                          '🧘',
-                          style: TextStyle(fontSize: 48),
-                        ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Image.asset('assets/images/logo.png'),
                       ),
                     ),
 
@@ -308,8 +306,9 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.all(12),
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: AppTheme.colors.error.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                          color: AppTheme.colors.error.withAlpha(26),
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.borderRadius),
                           border: Border.all(
                             color: AppTheme.colors.error,
                             width: 1,
@@ -477,8 +476,8 @@ class _LoginPageState extends State<LoginPage> {
                               ..onTap = _isLoading
                                   ? null
                                   : () {
-                                Navigator.pushNamed(context, '/signup');
-                              },
+                                      Navigator.pushNamed(context, '/signup');
+                                    },
                           ),
                         ],
                       ),
@@ -552,7 +551,8 @@ class _InputField extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppTheme.borderRadius),
           borderSide: BorderSide(color: AppTheme.colors.error, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
     );
   }
@@ -620,7 +620,8 @@ class _PasswordField extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppTheme.borderRadius),
           borderSide: BorderSide(color: AppTheme.colors.error, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
     );
   }
@@ -670,21 +671,22 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
             child: Center(
               child: widget.isLoading
                   ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
                   : Text(
-                widget.text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+                      widget.text,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
             ),
           ),
         ),

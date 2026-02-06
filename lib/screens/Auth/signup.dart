@@ -116,19 +116,19 @@ class _SignupPageState extends State<SignupPage> {
   final List<UserTypeOption> userTypes = const [
     UserTypeOption(
       id: UserType.organization,
-      icon: '🏢',
+      icon: 'assets/images/organization.png',
       title: 'Organization',
       description: 'For workplace mental health',
     ),
     UserTypeOption(
       id: UserType.family,
-      icon: '👨‍👩‍👧‍👦',
+      icon: 'assets/images/family.png',
       title: 'Family',
       description: 'Family wellness plan',
     ),
     UserTypeOption(
       id: UserType.individual,
-      icon: '👤',
+      icon: 'assets/images/individual.png',
       title: 'Individual',
       description: 'Personal mental health journey',
     ),
@@ -345,7 +345,7 @@ class _SignupPageState extends State<SignupPage> {
             onTap: () => setState(() => userType = type.id),
             child: Row(
               children: [
-                Text(type.icon, style: const TextStyle(fontSize: 40)),
+                Image.asset(type.icon, width: 40, height: 40),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -445,7 +445,7 @@ class _SignupPageState extends State<SignupPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.colors.warning.withOpacity(0.12),
+              color: AppTheme.colors.warning.withAlpha(30),
               borderRadius: BorderRadius.circular(AppTheme.borderRadius),
               border: Border.all(color: AppTheme.colors.warning),
             ),
@@ -511,7 +511,8 @@ class _SignupPageState extends State<SignupPage> {
               borderRadius: BorderRadius.circular(AppTheme.borderRadius),
               borderSide: BorderSide(color: AppTheme.colors.primary, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           ),
         ),
         const SizedBox(height: 16),
@@ -703,7 +704,9 @@ class _SelectableCard extends StatelessWidget {
           color: AppTheme.colors.cardBackground,
           borderRadius: BorderRadius.circular(AppTheme.borderRadius),
           border: Border.all(
-            color: isSelected ? AppTheme.colors.primary : const Color(0xFFE0E0E0),
+            color: isSelected
+                ? AppTheme.colors.primary
+                : const Color(0xFFE0E0E0),
             width: 2,
           ),
           boxShadow: isSelected ? [AppTheme.shadows.card] : null,
@@ -753,7 +756,8 @@ class _InputField extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppTheme.borderRadius),
           borderSide: BorderSide(color: AppTheme.colors.primary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
     );
   }
