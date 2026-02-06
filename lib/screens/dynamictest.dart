@@ -1,444 +1,10 @@
 // dynamic_test_page.dart
-//
-// Dynamic mental health test page that works for all test types
-// Replace static test pages with this single dynamic component
-//
-// Usage in router:
-// - /tests/baseline
-// - /tests/anxiety-screening
-// - /tests/depression-screening
-// - /tests/stress-resilience
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
-// ============================================================================
-// DATA MODELS
-// ============================================================================
-
-class TestQuestion {
-  final String id;
-  final String text;
-  final String type;
-  final List<String> options;
-  final List<int> values;
-
-  TestQuestion({
-    required this.id,
-    required this.text,
-    required this.type,
-    required this.options,
-    required this.values,
-  });
-
-  factory TestQuestion.fromJson(Map<String, dynamic> json) {
-    return TestQuestion(
-      id: json['id'],
-      text: json['text'],
-      type: json['type'],
-      options: List<String>.from(json['options']),
-      values: List<int>.from(json['values']),
-    );
-  }
-}
-
-class TestInterpretation {
-  final String label;
-  final Color color;
-  final String message;
-
-  TestInterpretation({
-    required this.label,
-    required this.color,
-    required this.message,
-  });
-}
-
-class TestData {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String icon;
-  final String description;
-  final String timeframe;
-  final int questionCount;
-  final String estimatedTime;
-  final List<TestQuestion> questions;
-  final int maxScore;
-  final String? nextTestRoute;
-
-  TestData({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.description,
-    required this.timeframe,
-    required this.questionCount,
-    required this.estimatedTime,
-    required this.questions,
-    required this.maxScore,
-    this.nextTestRoute,
-  });
-
-  factory TestData.fromJson(Map<String, dynamic> json) {
-    return TestData(
-      id: json['id'],
-      title: json['title'],
-      subtitle: json['subtitle'],
-      icon: json['icon'],
-      description: json['description'],
-      timeframe: json['timeframe'],
-      questionCount: json['questionCount'],
-      estimatedTime: json['estimatedTime'],
-      questions: (json['questions'] as List)
-          .map((q) => TestQuestion.fromJson(q))
-          .toList(),
-      maxScore: json['maxScore'],
-      nextTestRoute: json['nextTest'],
-    );
-  }
-
-  // Interpretation logic
-  TestInterpretation interpret(int rawScore) {
-    switch (id) {
-      case 'baseline':
-        final scaledScore = rawScore * 4;
-        if (scaledScore <= 28) {
-          return TestInterpretation(
-            label: 'Very Low',
-            color: const Color(0xFFE89E98),
-            message:
-                'Your wellbeing score is very low. Professional support is strongly recommended.',
-          );
-        } else if (scaledScore <= 49) {
-          return TestInterpretation(
-            label: 'Low',
-            color: const Color(0xFFF4C96F),
-            message:
-                'Your wellbeing is below the healthy threshold. Consider self-care practices and speaking to a professional.',
-          );
-        } else if (scaledScore <= 70) {
-          return TestInterpretation(
-            label: 'Moderate',
-            color: const Color(0xFFF4A59C),
-            message:
-                'You\'re in an average range. Keep monitoring and nurturing your wellbeing.',
-          );
-        }
-        return TestInterpretation(
-          label: 'Good',
-          color: const Color(0xFF7FC29B),
-          message: 'Your wellbeing is healthy! Keep up the positive routines.',
-        );
-
-      case 'anxiety-screening':
-        if (rawScore <= 4) {
-          return TestInterpretation(
-            label: 'Minimal',
-            color: const Color(0xFF7FC29B),
-            message: 'Your anxiety levels are minimal.',
-          );
-        } else if (rawScore <= 9) {
-          return TestInterpretation(
-            label: 'Mild',
-            color: const Color(0xFFF4C96F),
-            message:
-                'You\'re experiencing mild anxiety. Self-care and monitoring recommended.',
-          );
-        } else if (rawScore <= 14) {
-          return TestInterpretation(
-            label: 'Moderate',
-            color: const Color(0xFFF4A59C),
-            message:
-                'Moderate anxiety detected. Consider speaking with a professional.',
-          );
-        }
-        return TestInterpretation(
-          label: 'Severe',
-          color: const Color(0xFFE89E98),
-          message:
-              'Severe anxiety detected. Professional support is strongly recommended.',
-        );
-
-      case 'depression-screening':
-        if (rawScore <= 4) {
-          return TestInterpretation(
-            label: 'Minimal',
-            color: const Color(0xFF7FC29B),
-            message: 'Minimal or no depression.',
-          );
-        } else if (rawScore <= 9) {
-          return TestInterpretation(
-            label: 'Mild',
-            color: const Color(0xFFF4C96F),
-            message: 'Mild depression. Monitor your symptoms.',
-          );
-        } else if (rawScore <= 14) {
-          return TestInterpretation(
-            label: 'Moderate',
-            color: const Color(0xFFF4A59C),
-            message: 'Moderate depression. Consider professional support.',
-          );
-        } else if (rawScore <= 19) {
-          return TestInterpretation(
-            label: 'Moderately Severe',
-            color: const Color(0xFFE89E98),
-            message:
-                'Moderately severe depression. Professional help recommended.',
-          );
-        }
-        return TestInterpretation(
-          label: 'Severe',
-          color: const Color(0xFFE89E98),
-          message:
-              'Severe depression. Immediate professional support is strongly recommended.',
-        );
-
-      case 'stress-resilience':
-        final percentage = (rawScore / maxScore) * 100;
-        if (percentage <= 25) {
-          return TestInterpretation(
-            label: 'Low Stress',
-            color: const Color(0xFF7FC29B),
-            message: 'You\'re managing stress well.',
-          );
-        } else if (percentage <= 50) {
-          return TestInterpretation(
-            label: 'Moderate Stress',
-            color: const Color(0xFFF4C96F),
-            message: 'Some stress present. Practice self-care.',
-          );
-        } else if (percentage <= 75) {
-          return TestInterpretation(
-            label: 'High Stress',
-            color: const Color(0xFFF4A59C),
-            message:
-                'High stress levels. Consider stress management techniques.',
-          );
-        }
-        return TestInterpretation(
-          label: 'Very High Stress',
-          color: const Color(0xFFE89E98),
-          message: 'Very high stress. Professional support recommended.',
-        );
-
-      default:
-        return TestInterpretation(
-          label: 'Complete',
-          color: const Color(0xFF7FC29B),
-          message: 'Assessment complete.',
-        );
-    }
-  }
-}
-
-// ============================================================================
-// MOCK DATA (Replace with API when bot is ready)
-// ============================================================================
-
-class MockTestData {
-  static Future<TestData> loadTest(String testId) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    switch (testId) {
-      case 'baseline':
-        return TestData(
-          id: 'baseline',
-          title: 'Baseline Wellbeing',
-          subtitle: 'WHO-5 Well-Being Index',
-          icon: '🌱',
-          description: 'Understand your overall mental wellbeing right now.',
-          timeframe: 'Over the past 2 weeks...',
-          questionCount: 5,
-          estimatedTime: '1 minute',
-          maxScore: 25,
-          nextTestRoute: '/tests/anxiety-screening',
-          questions: [
-            TestQuestion(
-              id: 'q1',
-              text: 'I have felt cheerful and in good spirits.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time'
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-            TestQuestion(
-              id: 'q2',
-              text: 'I have felt calm and relaxed.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time'
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-            TestQuestion(
-              id: 'q3',
-              text: 'I have felt active and vigorous.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time'
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-            TestQuestion(
-              id: 'q4',
-              text: 'I woke up feeling fresh and rested.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time'
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-            TestQuestion(
-              id: 'q5',
-              text:
-                  'My daily life has been filled with things that interest me.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time'
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-          ],
-        );
-
-      case 'anxiety-screening':
-        return TestData(
-          id: 'anxiety-screening',
-          title: 'Anxiety Screening',
-          subtitle: 'GAD-7 Assessment',
-          icon: '🧠',
-          description: 'Measure anxiety levels over the past two weeks.',
-          timeframe:
-              'Over the past 2 weeks, how often have you been bothered by...',
-          questionCount: 7,
-          estimatedTime: '2 minutes',
-          maxScore: 21,
-          nextTestRoute: '/tests/depression-screening',
-          questions: List.generate(
-            7,
-            (index) => TestQuestion(
-              id: 'q${index + 1}',
-              text: 'Anxiety question ${index + 1} - [Bot will generate this]',
-              type: 'scale',
-              options: [
-                'Not at all',
-                'Several days',
-                'More than half the days',
-                'Nearly every day'
-              ],
-              values: [0, 1, 2, 3],
-            ),
-          ),
-        );
-
-      case 'depression-screening':
-        return TestData(
-          id: 'depression-screening',
-          title: 'Depression Screening',
-          subtitle: 'PHQ-9 Assessment',
-          icon: '💙',
-          description: 'Screen for depression symptoms.',
-          timeframe:
-              'Over the past 2 weeks, how often have you been bothered by...',
-          questionCount: 9,
-          estimatedTime: '3 minutes',
-          maxScore: 27,
-          nextTestRoute: '/tests/stress-resilience',
-          questions: List.generate(
-            9,
-            (index) => TestQuestion(
-              id: 'q${index + 1}',
-              text:
-                  'Depression question ${index + 1} - [Bot will generate this]',
-              type: 'scale',
-              options: [
-                'Not at all',
-                'Several days',
-                'More than half the days',
-                'Nearly every day'
-              ],
-              values: [0, 1, 2, 3],
-            ),
-          ),
-        );
-
-      case 'stress-resilience':
-        return TestData(
-          id: 'stress-resilience',
-          title: 'Stress & Resilience',
-          subtitle: 'Comprehensive Assessment',
-          icon: '⚡',
-          description: 'Evaluate your stress levels and coping mechanisms.',
-          timeframe: 'In the past month...',
-          questionCount: 20,
-          estimatedTime: '5 minutes',
-          maxScore: 80,
-          nextTestRoute: null,
-          questions: List.generate(
-            20,
-            (index) => TestQuestion(
-              id: 'q${index + 1}',
-              text: 'Stress question ${index + 1} - [Bot will generate this]',
-              type: 'scale',
-              options: [
-                'Never',
-                'Rarely',
-                'Sometimes',
-                'Often',
-                'Very Often'
-              ],
-              values: [0, 1, 2, 3, 4],
-            ),
-          ),
-        );
-
-      default:
-        throw Exception('Test not found: $testId');
-    }
-  }
-
-// TODO: Replace with real API call when bot is ready
-// static Future<TestData> fetchTestFromAPI(String testId) async {
-//   final response = await http.get(
-//     Uri.parse('YOUR_FLASK_API_URL/api/tests/$testId'),
-//   );
-//
-//   if (response.statusCode == 200) {
-//     return TestData.fromJson(json.decode(response.body));
-//   } else {
-//     throw Exception('Failed to load test');
-//   }
-// }
-}
+import 'package:provider/provider.dart';
+import '../models/test_models.dart';
+import '../services/test_api_service.dart';
+import 'test_results_provider.dart';
 
 // ============================================================================
 // MAIN WIDGET
@@ -483,10 +49,7 @@ class _DynamicTestPageState extends State<DynamicTestPage> {
     });
 
     try {
-      // TODO: Replace with API call when bot is ready
-      // final testData = await MockTestData.fetchTestFromAPI(widget.testId);
-      final testData = await MockTestData.loadTest(widget.testId);
-
+      final testData = await TestApiService.loadTest(widget.testId);
       setState(() {
         _testData = testData;
         _isLoading = false;
@@ -504,7 +67,7 @@ class _DynamicTestPageState extends State<DynamicTestPage> {
     return _answers.length / _testData!.questions.length;
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     if (_testData == null) return;
 
     final rawScore = _testData!.questions.fold<int>(
@@ -514,30 +77,36 @@ class _DynamicTestPageState extends State<DynamicTestPage> {
 
     final interpretation = _testData!.interpret(rawScore);
 
+    await TestApiService.submitTestResults(
+      testId: _testData!.id,
+      answers: _answers,
+      rawScore: rawScore,
+      maxScore: _testData!.maxScore,
+      interpretation: interpretation.label,
+    );
+
+    // Update provider
+    final resultsProvider = context.read<TestResultsProvider>();
+    resultsProvider.addTestResult(TestResult(
+      testId: _testData!.id,
+      score: rawScore,
+      label: interpretation.label,
+      msg: interpretation.message,
+      color: interpretation.color,
+      date: DateTime.now(),
+    ));
+
     setState(() {
       _result = interpretation;
       _showResults = true;
     });
-
-    // TODO: Save results to backend/local storage
   }
 
   void _goToNextTest() {
     if (_testData?.nextTestRoute != null) {
-      setState(() {
-        _answers.clear();
-        _showResults = false;
-        _result = null;
-      });
-
       // Extract test ID from route
       final nextTestId = _testData!.nextTestRoute!.split('/').last;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DynamicTestPage(testId: nextTestId),
-        ),
-      );
+      Navigator.pushReplacementNamed(context, '/test/$nextTestId');
     }
   }
 
