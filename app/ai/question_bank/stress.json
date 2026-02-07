@@ -1,0 +1,138 @@
+{
+  "test_type": "stress",
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "S1",
+      "text": "You wake up already feeling tired and overwhelmed, even before starting the day. How often does this happen?",
+      "tags": ["fatigue", "daily_stress"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": {
+        "low": "S2",
+        "medium": "S3",
+        "high": "S4"
+      }
+    },
+
+    {
+      "id": "S2",
+      "text": "During the day, how easy is it for you to concentrate on one task?",
+      "tags": ["focus", "mental_load"],
+      "options": ["Very Easy", "Easy", "Neutral", "Hard", "Very Hard"],
+      "severity_map": {
+        "Very Easy": 0,
+        "Easy": 1,
+        "Neutral": 2,
+        "Hard": 3,
+        "Very Hard": 4
+      },
+      "next": {
+        "low": "S5",
+        "medium": "S3",
+        "high": "S4"
+      }
+    },
+
+    {
+      "id": "S3",
+      "text": "When responsibilities pile up, how intense does the pressure feel?",
+      "tags": ["pressure", "workload"],
+      "options": ["Not intense", "Slightly intense", "Moderately intense", "Very intense", "Extremely intense"],
+      "severity_map": {
+        "Not intense": 0,
+        "Slightly intense": 1,
+        "Moderately intense": 2,
+        "Very intense": 3,
+        "Extremely intense": 4
+      },
+      "next": {
+        "low": "S5",
+        "medium": "S6",
+        "high": "S4"
+      }
+    },
+
+    {
+      "id": "S4",
+      "text": "Do you notice physical signs of stress like headaches, tight muscles, or restlessness?",
+      "tags": ["physical_stress"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": {
+        "low": "S6",
+        "medium": "S6",
+        "high": "S7"
+      }
+    },
+
+    {
+      "id": "S5",
+      "text": "How well are you able to relax during your free time?",
+      "tags": ["relaxation"],
+      "options": ["Very well", "Well", "Okay", "Poorly", "Not at all"],
+      "severity_map": {
+        "Very well": 0,
+        "Well": 1,
+        "Okay": 2,
+        "Poorly": 3,
+        "Not at all": 4
+      },
+      "next": {
+        "low": "S7",
+        "medium": "S7",
+        "high": "S7"
+      }
+    },
+
+    {
+      "id": "S6",
+      "text": "Do you feel you have someone you can talk to when things feel overwhelming?",
+      "tags": ["support_system"],
+      "options": ["Always", "Often", "Sometimes", "Rarely", "Never"],
+      "severity_map": {
+        "Always": 0,
+        "Often": 1,
+        "Sometimes": 2,
+        "Rarely": 3,
+        "Never": 4
+      },
+      "next": {
+        "low": "S7",
+        "medium": "S7",
+        "high": "S7"
+      }
+    },
+
+    {
+      "id": "S7",
+      "text": "Overall, how manageable does your stress feel right now?",
+      "tags": ["overall_stress"],
+      "options": ["Very manageable", "Manageable", "Neutral", "Hard to manage", "Unmanageable"],
+      "severity_map": {
+        "Very manageable": 0,
+        "Manageable": 1,
+        "Neutral": 2,
+        "Hard to manage": 3,
+        "Unmanageable": 4
+      },
+      "next": {
+        "low": "END",
+        "medium": "END",
+        "high": "END"
+      }
+    }
+  ]
+}

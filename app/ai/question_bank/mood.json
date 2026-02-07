@@ -1,0 +1,78 @@
+{
+  "test_type": "mood",
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "M1",
+      "text": "Over the past few days, your mood has felt low or flat.",
+      "tags": ["low_mood"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "M2", "medium": "M3", "high": "M4" }
+    },
+
+    {
+      "id": "M2",
+      "text": "You experience moments of enjoyment or interest during the day.",
+      "tags": ["positive_affect"],
+      "options": ["Always", "Often", "Sometimes", "Rarely", "Never"],
+      "severity_map": {
+        "Always": 0,
+        "Often": 1,
+        "Sometimes": 2,
+        "Rarely": 3,
+        "Never": 4
+      },
+      "next": { "low": "END", "medium": "END", "high": "END" }
+    },
+
+    {
+      "id": "M3",
+      "text": "You feel emotionally heavy or unmotivated without a clear reason.",
+      "tags": ["emotional_state"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "END", "medium": "END", "high": "END" }
+    },{
+  "id": "M4",
+  "text": "Your mood shifts noticeably during the day, even without clear triggers.",
+  "tags": ["mood_variability"],
+  "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+  "severity_map": {
+    "Never": 0,
+    "Rarely": 1,
+    "Sometimes": 2,
+    "Often": 3,
+    "Almost Always": 4
+  },
+  "next": { "low": "END", "medium": "END", "high": "END" }
+},{
+  "id": "M5",
+  "text": "You find yourself more irritable or emotionally sensitive than usual.",
+  "tags": ["irritability", "emotional_sensitivity"],
+  "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+  "severity_map": {
+    "Never": 0,
+    "Rarely": 1,
+    "Sometimes": 2,
+    "Often": 3,
+    "Almost Always": 4
+  },
+  "next": { "low": "END", "medium": "END", "high": "END" }
+}
+
+
+  ]
+}

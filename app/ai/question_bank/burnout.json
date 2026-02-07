@@ -1,0 +1,80 @@
+{
+  "test_type": "burnout",
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "B1",
+      "text": "You feel emotionally drained after most days.",
+      "tags": ["emotional_exhaustion"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "B2", "medium": "B3", "high": "B4" }
+    },
+
+    {
+      "id": "B2",
+      "text": "Tasks that once felt manageable now feel tiring or heavy.",
+      "tags": ["energy", "motivation"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "B5", "medium": "B3", "high": "B4" }
+    },
+
+    {
+      "id": "B3",
+      "text": "You feel detached or emotionally distant from work or responsibilities.",
+      "tags": ["detachment"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "B5", "medium": "END", "high": "END" }
+    },
+
+    {
+      "id": "B4",
+      "text": "You feel like you are running on empty most of the time.",
+      "tags": ["chronic_fatigue"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "END", "medium": "END", "high": "END" }
+    },
+    {
+  "id": "B5",
+  "text": "Even after rest or time off, you feel it takes a long time to regain energy.",
+  "tags": ["recovery", "prolonged_exhaustion"],
+  "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+  "severity_map": {
+    "Never": 0,
+    "Rarely": 1,
+    "Sometimes": 2,
+    "Often": 3,
+    "Almost Always": 4
+  },
+  "next": { "low": "END", "medium": "END", "high": "END" }
+}
+
+  ]
+}

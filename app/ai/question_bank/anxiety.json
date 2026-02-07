@@ -1,0 +1,80 @@
+{
+  "test_type": "anxiety",
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "A1",
+      "text": "You feel worried or uneasy even when nothing specific seems wrong.",
+      "tags": ["worry", "anticipatory_anxiety"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "A2", "medium": "A3", "high": "A4" }
+    },
+
+    {
+      "id": "A2",
+      "text": "Your thoughts keep going back to the same concerns repeatedly.",
+      "tags": ["rumination"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "A5", "medium": "A3", "high": "A4" }
+    },
+
+    {
+      "id": "A3",
+      "text": "Uncertainty about the future makes you feel tense or restless.",
+      "tags": ["uncertainty", "control"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "A5", "medium": "A6", "high": "A4" }
+    },
+
+    {
+      "id": "A4",
+      "text": "You notice physical signs like restlessness, tight chest, or racing thoughts.",
+      "tags": ["physical_anxiety"],
+      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "severity_map": {
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Almost Always": 4
+      },
+      "next": { "low": "A6", "medium": "A6", "high": "END" }
+    },
+
+    {
+      "id": "A5",
+      "text": "You are able to calm yourself when you start feeling anxious.",
+      "tags": ["coping"],
+      "options": ["Always", "Often", "Sometimes", "Rarely", "Never"],
+      "severity_map": {
+        "Always": 0,
+        "Often": 1,
+        "Sometimes": 2,
+        "Rarely": 3,
+        "Never": 4
+      },
+      "next": { "low": "END", "medium": "END", "high": "END" }
+    }
+  ]
+}
