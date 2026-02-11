@@ -63,7 +63,7 @@ class TestInfo {
 }
 
 class TestsPage extends StatelessWidget {
-  TestsPage({Key? key}) : super(key: key);
+  const TestsPage({super.key});
 
   // Basic tests data
   final List<TestItem> basicTests = const [
@@ -77,39 +77,39 @@ class TestsPage extends StatelessWidget {
       path: "/test/baseline",
     ),
     TestItem(
-      id: "depression",
+      id: "depression-screening",
       name: "Depression Screening",
       subtitle: "PHQ-9 Patient Health Questionnaire",
       duration: "2 min",
       questions: 9,
       icon: "🌙",
-      path: "/test/depression",
+      path: "/test/depression-screening",
     ),
     TestItem(
-      id: "anxiety",
+      id: "anxiety-screening",
       name: "Anxiety Screening",
       subtitle: "GAD-7 Generalized Anxiety Disorder Scale",
       duration: "1.5 min",
       questions: 7,
       icon: "🌊",
-      path: "/test/anxiety",
+      path: "/test/anxiety-screening",
     ),
     TestItem(
-      id: "stress",
+      id: "stress-resilience",
       name: "Stress & Resilience",
       subtitle: "Perceived Stress & Coping Assessment",
       duration: "3 min",
       questions: 20,
       icon: "🔥",
-      path: "/test/stress",
+      path: "/test/stress-resilience",
     ),
   ];
 
   final List<TestInfo> testInfo = const [
     TestInfo(id: "baseline", title: "Baseline Wellbeing", max: 25),
-    TestInfo(id: "depression", title: "Depression Screening", max: 27),
-    TestInfo(id: "anxiety", title: "Anxiety Screening", max: 21),
-    TestInfo(id: "stress", title: "Stress & Resilience", max: 80),
+    TestInfo(id: "depression-screening", title: "Depression Screening", max: 27),
+    TestInfo(id: "anxiety-screening", title: "Anxiety Screening", max: 21),
+    TestInfo(id: "stress-resilience", title: "Stress & Resilience", max: 80),
   ];
 
   @override
@@ -293,7 +293,7 @@ class TestsPage extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 16),
             child: _buildTestCard(context, test, completed, isLocked),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -561,7 +561,7 @@ class TestsPage extends StatelessWidget {
                 ),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

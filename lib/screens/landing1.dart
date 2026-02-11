@@ -112,7 +112,7 @@ class OnboardingSlide {
 }
 
 class Landing1 extends StatefulWidget {
-  const Landing1({Key? key}) : super(key: key);
+  const Landing1({super.key});
 
   @override
   State<Landing1> createState() => _Landing1State();

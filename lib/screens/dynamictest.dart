@@ -86,6 +86,7 @@ class _DynamicTestPageState extends State<DynamicTestPage> {
     );
 
     // Update provider
+    if (!mounted) return;
     final resultsProvider = context.read<TestResultsProvider>();
     resultsProvider.addTestResult(TestResult(
       testId: _testData!.id,
@@ -483,7 +484,7 @@ class _DynamicTestPageState extends State<DynamicTestPage> {
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () => Navigator.pushNamed(context, '/tests'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
                               foregroundColor: Colors.white,

@@ -80,7 +80,7 @@ class Language {
 }
 
 class SignupPage extends StatefulWidget {
-  const SignupPage({Key? key}) : super(key: key);
+  const SignupPage({super.key});
 
   @override
   State<SignupPage> createState() => _SignupPageState();
@@ -167,6 +167,7 @@ class _SignupPageState extends State<SignupPage> {
 
   void handleSubmit() {
     // Collect all form data
+    // ignore: unused_local_variable
     final signupData = {
       'userType': userType,
       'ageGroup': ageGroup,
@@ -183,7 +184,7 @@ class _SignupPageState extends State<SignupPage> {
     };
 
     // TODO: Send data to backend/state management
-    print('Signup Data: $signupData');
+    // print('Signup Data: $signupData');
 
     Navigator.pushReplacementNamed(context, '/home');
   }

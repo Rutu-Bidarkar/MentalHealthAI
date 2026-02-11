@@ -53,7 +53,7 @@ class TestApiService {
     if (useMockData) {
       // Simulate API call
       await Future.delayed(Duration(milliseconds: 300));
-      print('Mock: Test results saved locally');
+      // print('Mock: Test results saved locally');
       return;
     }
     
