@@ -307,16 +307,16 @@ class _JournalPageState extends State<JournalPage> {
               ),
             ),
 
-          // Middle Layer: Image fitted vertically - Centered
-          if (_currentTheme.backgroundPath.isNotEmpty)
-            Positioned.fill(
-              child: Center(
-                child: Image.asset(
-                  _currentTheme.backgroundPath,
-                  fit: BoxFit.fitHeight,
-                ),
-              ),
-            ),
+          // Middle Layer: Image fitted vertically - Centered (REMOVED as per user request)
+          // if (_currentTheme.backgroundPath.isNotEmpty)
+          //   Positioned.fill(
+          //     child: Center(
+          //       child: Image.asset(
+          //         _currentTheme.backgroundPath,
+          //         fit: BoxFit.fitHeight,
+          //       ),
+          //     ),
+          //   ),
           
           // Foreground: Content
            SafeArea(
