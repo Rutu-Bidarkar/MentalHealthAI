@@ -194,6 +194,8 @@ class _JournalPageState extends State<JournalPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Journal entry saved!'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 4), // Limited to 4 seconds as requested
         action: SnackBarAction(
           label: 'Chat about this',
           onPressed: () {
@@ -553,14 +555,82 @@ class _PastEntriesSection extends StatelessWidget {
             itemCount: entries.length,
             itemBuilder: (context, index) {
               final entry = entries[index];
+
+              // Find matching mood object for image
+              final moodObj = Mood.all.firstWhere(
+                (m) => m.emoji == entry.mood,
+                orElse: () => Mood.all[3], // Default to neutral if not found
+              );
+
               return Card(
                 color: Colors.white.withValues(alpha: 0.9),
                 margin: const EdgeInsets.only(bottom: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  title: Text(DateFormat.yMMMd().format(entry.date), style: fontStyle.copyWith(fontWeight: FontWeight.bold)),
-                  subtitle: Text(entry.preview, maxLines: 1),
-                  trailing: Text(entry.mood, style: const TextStyle(fontSize: 24)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                       Row(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           // Content
+                           Expanded(
+                             child: Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               children: [
+                                 Text(
+                                   DateFormat.yMMMd().format(entry.date), 
+                                   style: fontStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[600])
+                                 ),
+                                 const SizedBox(height: 4),
+                                 Text(entry.preview, style: fontStyle.copyWith(fontSize: 16)),
+                               ],
+                             ),
+                           ),
+                           // Mood Image
+                           const SizedBox(width: 8),
+                           Container(
+                             width: 50,
+                             height: 50,
+                             decoration: BoxDecoration(
+                               shape: BoxShape.circle,
+                               boxShadow: [
+                                 BoxShadow(
+                                   color: moodObj.baseColor.withValues(alpha: 0.3),
+                                   blurRadius: 8,
+                                   offset: const Offset(0, 2),
+                                 )
+                               ]
+                             ),
+                             child: Image.asset(moodObj.imagePath),
+                           ),
+                         ],
+                       ),
+                       if (entry.tags.isNotEmpty) ...[
+                         const SizedBox(height: 12),
+                         Wrap(
+                           spacing: 8,
+                           children: entry.tags.map((tag) => Container(
+                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                             decoration: BoxDecoration(
+                               color: moodObj.baseColor.withValues(alpha: 0.2), // Darker shade background
+                               borderRadius: BorderRadius.circular(12),
+                               border: Border.all(color: moodObj.baseColor.withValues(alpha: 0.5)),
+                             ),
+                             child: Text(
+                               tag,
+                               style: TextStyle(
+                                 fontSize: 12,
+                                 fontWeight: FontWeight.w600,
+                                 color: moodObj.baseColor, // Colored text
+                               ),
+                             ),
+                           )).toList(),
+                         ),
+                       ],
+                    ],
+                  ),
                 ),
               );
             },

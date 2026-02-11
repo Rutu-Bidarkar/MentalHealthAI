@@ -7,6 +7,9 @@ import 'screens/home.dart';
 import 'screens/landing1.dart';
 import 'screens/tests.dart';
 import 'screens/journal.dart';
+import 'screens/profile_screen.dart';
+import 'screens/activities.dart';
+import 'screens/community.dart';
 import 'screens/test_results_provider.dart';
 
 void main() {
@@ -47,10 +50,13 @@ class MyApp extends StatelessWidget {
         '/assessment-history': (context) => Scaffold(appBar: AppBar(title: const Text('Assessment History')), body: const Center(child: Text('Coming Soon'))),
         '/achievements': (context) => Scaffold(appBar: AppBar(title: const Text('Achievements')), body: const Center(child: Text('Coming Soon'))),
         // Placeholder for profile page to prevent navigation errors
-        '/profile': (context) => Scaffold(
-          appBar: AppBar(title: const Text('Profile')),
-          body: const Center(child: Text('Profile Page')),
-        ),
+        '/profile': (context) => const ProfileScreen(), // Assuming ProfileScreen exists and is imported
+        '/games': (context) => Scaffold(appBar: AppBar(title: const Text('Games')), body: const Center(child: Text('Games Page'))),
+        '/activities': (context) => const ActivitiesPage(), // Assuming ActivitiesPage exists
+        '/community': (context) => const CommunityPage(), // Assuming CommunityPage exists
+        '/consult': (context) => Scaffold(appBar: AppBar(title: const Text('Consult')), body: const Center(child: Text('Consult Page'))),
+        '/reports': (context) => Scaffold(appBar: AppBar(title: const Text('Reports')), body: const Center(child: Text('Reports Page'))),
+        '/test-construction': (context) => Scaffold(appBar: AppBar(title: const Text('Mental Health Test')), body: const Center(child: Text('Under Construction'))),
       },
     );
   }

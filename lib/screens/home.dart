@@ -9,7 +9,7 @@ import 'activities.dart';
 import 'community.dart';
 import 'profile_screen.dart';
 import 'tests.dart';
-// import 'journal.dart'; // Removed unused import
+import 'journal.dart'; // Uncommented import
 
 // QuickAccessTab class
 class QuickAccessTab {
@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     QuickAccessTab(
         icon: Icons.games_outlined,
         label: "Games",
-        imagePath: 'assets/images/games.png',
+        imagePath: 'assets/images/Games.png', // Capitalized G
         path: "/games",
         gradient: AppGradients.games),
     QuickAccessTab(
@@ -58,11 +58,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         path: "/community",
         gradient: AppGradients.community),
     QuickAccessTab(
-        icon: Icons.bar_chart,
-        label: "Dashboard", 
+        icon: Icons.dashboard_outlined,
+        label: "Dashboard",
         imagePath: 'assets/images/Reports.png',
-        path: "/report",
-        gradient: AppGradients.dashboard),
+        path: "/reports", // Changed from /profile
+        gradient: AppGradients.reports),
     QuickAccessTab(
         icon: Icons.book_outlined,
         label: "Journal",
@@ -71,9 +71,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         gradient: AppGradients.journal),
     QuickAccessTab(
         icon: Icons.medical_services_outlined,
-        label: "Book Consult",
-        imagePath: 'assets/images/Consult.png',
-        path: "/consultancy",
+        label: "Consult",
+        imagePath: 'assets/images/consult.png', // Lowercase c
+        path: "/consult",
         gradient: AppGradients.consult),
   ];
 
@@ -188,10 +188,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final List<Widget> pages = [
       _buildHomeContent(),
       const TestsPage(),
-      const ActivitiesPage(), // Placeholder
-      const CommunityPage(), // Placeholder
-      const ProfileScreen(), // Placeholder
+      const JournalPage(), // Changed to JournalPage
+      const ProfileScreen(),
     ];
+
+    // Safety check for index out of bounds (can happen during hot reload if pages count changes)
+    if (_selectedIndex >= pages.length) {
+      _selectedIndex = 0;
+    }
 
     return Scaffold(
       body: pages[_selectedIndex],
@@ -203,11 +207,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         unselectedItemColor: HomeColors.textSecondary,
         showUnselectedLabels: true,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'Tests'),
-          BottomNavigationBarItem(icon: Icon(Icons.fitness_center_outlined), label: 'Activities'), // Changed icon for Activities
-          BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Community'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+          BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.assignment_outlined),
+          activeIcon: Icon(Icons.assignment),
+          label: 'Tests',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.book_outlined), // Journal icon
+          activeIcon: Icon(Icons.book),
+          label: 'Journal', // Changed from Activities
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profile',
+        ),
         ],
       ),
     );
@@ -384,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
          const SizedBox(height: 16),
          // Test Button below jar
          HoverButton(
-           onPressed: () => setState(() => _selectedIndex = 1), // Go to tests
+           onPressed: () => Navigator.pushNamed(context, '/test-construction'), // Changed route
            label: "Take a Mental Health Test",
            icon: Icons.assignment_outlined,
            gradient: AppGradients.ocean,
@@ -410,10 +429,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.9,
+            crossAxisCount: 6, // Increased from 3 to 6 to reduce size by ~50%
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.8, // Adjusted for new width
           ),
           itemCount: quickAccessTabs.length,
           itemBuilder: (context, index) {
@@ -529,24 +548,32 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: widget.tab.gradient,
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.all(8),
+                    padding: widget.tab.label == "Dashboard" 
+                        ? const EdgeInsets.all(28) // Further increased padding for Dashboard to reduce size
+                        : const EdgeInsets.all(20), 
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: widget.tab.gradient,
+                    ),
+                    child: Center(
+                      child: Image.asset(widget.tab.imagePath, fit: BoxFit.contain), 
+                    ),
                   ),
-                  child: Image.asset(widget.tab.imagePath, fit: BoxFit.contain), 
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  widget.tab.label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: HomeColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Text(
+                    widget.tab.label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: HomeColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],

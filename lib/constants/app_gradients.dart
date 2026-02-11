@@ -68,7 +68,7 @@ class AppGradients {
     stops: [0.0, 0.5, 1.0],
   );
 
-  static const dashboard = LinearGradient(
+  static const reports = LinearGradient(
     colors: [Color(0xFF9462EE), Color(0xFFC1A4F4), Color(0xFF9462EE)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
