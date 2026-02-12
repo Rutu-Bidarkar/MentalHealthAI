@@ -5,7 +5,6 @@ import '../../widgets/game_card.dart';
 // individual game pages
 import 'pop_and_slash/pop_and_slash_page.dart';
 import 'memory_lane/memory_lane_page.dart';
-import 'brain_pretzel/brain_pretzel_page.dart';
 
 class GamesPage extends StatelessWidget {
   const GamesPage({super.key});
@@ -22,12 +21,6 @@ class GamesPage extends StatelessWidget {
       title: 'Memory Lane',
       description: 'Short-term memory',
       imagePath: 'assets/images/MemoryLane.png',
-    ),
-    GameItem(
-      id: 'brain_pretzel',
-      title: 'Brain Pretzel',
-      description: 'Problem-solving',
-      imagePath: 'assets/images/brainPretzel.png',
     ),
   ];
 
@@ -110,13 +103,6 @@ class GamesPage extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const MemoryLanePage()),
-        );
-        break;
-
-      case 'brain_pretzel':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const BrainPretzelPage()),
         );
         break;
     }
