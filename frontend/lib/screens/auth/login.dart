@@ -134,10 +134,13 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // ignore: todo
+      // TODO: Replace with actual API call
+      await _performLogin(
+        _usernameController.text,
+        _passwordController.text,
+      );
 
-      // todo: Replace with actual API call
-      await _performLogin(_usernameController.text, _passwordController.text);
+      // ✅ NO TOKEN SETTING - Community works without auth!
 
       // Navigate to home on success
       if (mounted) {
@@ -159,23 +162,45 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // Simulated API call - replace with your actual authentication logic
-  Future<void> _performLogin(String username, String password) async {
+  Future<Map<String, dynamic>> _performLogin(
+    String username,
+    String password,
+  ) async {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 2));
 
-    // Simulate different error scenarios for demonstration
-    // ignore: todo
+    // TODO: Replace with actual API call to your backend
+    // Example API call structure:
+    /*
+    final response = await http.post(
+      Uri.parse('http://YOUR_BACKEND_URL/api/auth/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'username_or_email': username,
+        'password': password,
+      }),
+    );
 
-    // todo: Replace with actual API call
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data;
+    } else {
+      throw Exception('Invalid credentials');
+    }
+    */
 
-    // Example: Check credentials (this is just for demo)
+    // Simulated response for demo
     if (username == 'demo@example.com' && password == 'password123') {
-      // Success - do nothing, will navigate to home
-      return;
+      return {
+        'user': {
+          'id': '123',
+          'username': 'demo',
+          'email': 'demo@example.com',
+        }
+      };
     } else if (username.isEmpty || password.isEmpty) {
       throw Exception('Please fill in all fields');
     } else {
-      // Simulate failed login
       throw Exception('Invalid username or password');
     }
   }
@@ -188,10 +213,10 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // ignore: todo
-
-      // todo: Implement Google Sign-In
+      // TODO: Implement Google Sign-In
       await Future.delayed(const Duration(seconds: 1));
+
+      // ✅ NO TOKEN SETTING
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
@@ -216,8 +241,10 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // : Implement Microsoft Sign-In
+      // TODO: Implement Microsoft Sign-In
       await Future.delayed(const Duration(seconds: 1));
+
+      // ✅ NO TOKEN SETTING
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
@@ -236,7 +263,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _handleForgotPassword() {
-    // todo: Navigate to forgot password page or show dialog
+    // TODO: Navigate to forgot password page or show dialog
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -279,7 +306,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
-                        child: Image.asset('assets/images/logo.png'),
+                        child: Image.asset('assets/images/Logo.png'),
                       ),
                     ),
 
