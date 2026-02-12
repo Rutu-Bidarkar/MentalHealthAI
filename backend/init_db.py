@@ -4,6 +4,8 @@ from app.models.user import User
 from app.models.organization_token import OrganizationToken
 from app.models.community_models import *
 from werkzeug.security import generate_password_hash
+from app.models.popslash_session import PopSlashSession
+from app.models.memorylane_session import MemoryLaneSession
 
 def init_database():
     """Initialize the database with tables"""

@@ -60,3 +60,27 @@ class OrganizationToken(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     expires_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# pop and slash model 
+
+class PopSlashSession(db.Model):
+    __tablename__ = "popslash_sessions"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+
+    reaction_time_avg = db.Column(db.Float, nullable=False)
+    reaction_time_variance = db.Column(db.Float, nullable=False)
+    correct_hits = db.Column(db.Integer, nullable=False)
+    wrong_hits = db.Column(db.Integer, nullable=False)
+    missed_targets = db.Column(db.Integer, nullable=False)
+    accuracy = db.Column(db.Float, nullable=False)
+    session_duration = db.Column(db.Integer, nullable=False)
+
+    cognitive_score = db.Column(db.Float)
+    risk_level = db.Column(db.String(20))  # optional: low / moderate / high
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref=db.backref("popslash_sessions", lazy=True))

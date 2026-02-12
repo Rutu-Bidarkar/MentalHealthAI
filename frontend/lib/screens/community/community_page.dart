@@ -43,7 +43,7 @@ class _CommunityPageState extends State<CommunityPage> {
     if (mounted) {
       setState(() => _isLoading = true);
     }
-    
+
     try {
       final posts = await CommunityApiService.getPosts(
         category: _selectedCategory,
@@ -76,48 +76,50 @@ class _CommunityPageState extends State<CommunityPage> {
             icon: const Icon(Icons.filter_list),
             onPressed: _categories.isEmpty ? null : _showCategoryFilter,
           ),
-          IconButton(
-            icon: const Icon(Icons.sort),
-            onPressed: _showSortOptions,
-          ),
+          IconButton(icon: const Icon(Icons.sort), onPressed: _showSortOptions),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                        const SizedBox(height: 16),
-                        Text(_errorMessage!, textAlign: TextAlign.center),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _loadPosts,
-                          child: const Text('Retry'),
-                        ),
-                      ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red,
                     ),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadPosts,
-                  child: _posts.isEmpty
-                      ? _buildEmptyState()
-                      : ListView.builder(
-                          itemCount: _posts.length,
-                          itemBuilder: (context, index) {
-                            return PostCard(
-                              post: _posts[index],
-                              onTap: () => _navigateToPost(_posts[index]),
-                              onVote: (voteType) => _handleVote(_posts[index], voteType),
-                            );
-                          },
-                        ),
+                    const SizedBox(height: 16),
+                    Text(_errorMessage!, textAlign: TextAlign.center),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _loadPosts,
+                      child: const Text('Retry'),
+                    ),
+                  ],
                 ),
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadPosts,
+              child: _posts.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      itemCount: _posts.length,
+                      itemBuilder: (context, index) {
+                        return PostCard(
+                          post: _posts[index],
+                          onTap: () => _navigateToPost(_posts[index]),
+                          onVote: (voteType) =>
+                              _handleVote(_posts[index], voteType),
+                        );
+                      },
+                    ),
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToCreatePost,
         icon: const Icon(Icons.add),
@@ -177,17 +179,19 @@ class _CommunityPageState extends State<CommunityPage> {
                 _loadPosts();
               },
             ),
-            ..._categories.map((category) => ListTile(
-                  leading: Icon(_getCategoryIcon(category.id)),
-                  title: Text(category.name),
-                  subtitle: Text(category.description),
-                  selected: _selectedCategory == category.id,
-                  onTap: () {
-                    setState(() => _selectedCategory = category.id);
-                    Navigator.pop(context);
-                    _loadPosts();
-                  },
-                )),
+            ..._categories.map(
+              (category) => ListTile(
+                leading: Icon(_getCategoryIcon(category.id)),
+                title: Text(category.name),
+                subtitle: Text(category.description),
+                selected: _selectedCategory == category.id,
+                onTap: () {
+                  setState(() => _selectedCategory = category.id);
+                  Navigator.pop(context);
+                  _loadPosts();
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -253,9 +257,7 @@ class _CommunityPageState extends State<CommunityPage> {
   void _navigateToPost(CommunityPost post) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => PostDetailPage(postId: post.id),
-      ),
+      MaterialPageRoute(builder: (context) => PostDetailPage(postId: post.id)),
     );
     _loadPosts();
   }
@@ -277,20 +279,26 @@ class _CommunityPageState extends State<CommunityPage> {
       await CommunityApiService.votePost(post.id, voteType);
       _loadPosts();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error voting: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error voting: $e')));
     }
   }
 
   IconData _getCategoryIcon(String categoryId) {
     switch (categoryId) {
-      case 'anxiety': return Icons.psychology;
-      case 'depression': return Icons.sentiment_very_dissatisfied;
-      case 'stress': return Icons.cloud;
-      case 'support': return Icons.favorite;
-      case 'wellness': return Icons.spa;
-      default: return Icons.chat;
+      case 'anxiety':
+        return Icons.psychology;
+      case 'depression':
+        return Icons.sentiment_very_dissatisfied;
+      case 'stress':
+        return Icons.cloud;
+      case 'support':
+        return Icons.favorite;
+      case 'wellness':
+        return Icons.spa;
+      default:
+        return Icons.chat;
     }
   }
 }
@@ -321,7 +329,10 @@ class PostCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: _getCategoryColor(post.category),
                       borderRadius: BorderRadius.circular(12),
@@ -356,7 +367,10 @@ class PostCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 post.title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -375,7 +389,9 @@ class PostCard extends StatelessWidget {
                       post.userVote == 'upvote'
                           ? Icons.arrow_upward
                           : Icons.arrow_upward_outlined,
-                      color: post.userVote == 'upvote' ? Colors.orange : Colors.grey,
+                      color: post.userVote == 'upvote'
+                          ? Colors.orange
+                          : Colors.grey,
                     ),
                     onPressed: () => onVote('upvote'),
                     padding: EdgeInsets.zero,
@@ -389,8 +405,8 @@ class PostCard extends StatelessWidget {
                       color: post.score > 0
                           ? Colors.orange
                           : post.score < 0
-                              ? Colors.blue
-                              : Colors.grey,
+                          ? Colors.blue
+                          : Colors.grey,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -399,7 +415,9 @@ class PostCard extends StatelessWidget {
                       post.userVote == 'downvote'
                           ? Icons.arrow_downward
                           : Icons.arrow_downward_outlined,
-                      color: post.userVote == 'downvote' ? Colors.blue : Colors.grey,
+                      color: post.userVote == 'downvote'
+                          ? Colors.blue
+                          : Colors.grey,
                     ),
                     onPressed: () => onVote('downvote'),
                     padding: EdgeInsets.zero,
@@ -423,12 +441,18 @@ class PostCard extends StatelessWidget {
 
   Color _getCategoryColor(String category) {
     switch (category) {
-      case 'anxiety': return Colors.purple;
-      case 'depression': return Colors.indigo;
-      case 'stress': return Colors.orange;
-      case 'support': return Colors.pink;
-      case 'wellness': return Colors.green;
-      default: return Colors.blue;
+      case 'anxiety':
+        return Colors.purple;
+      case 'depression':
+        return Colors.indigo;
+      case 'stress':
+        return Colors.orange;
+      case 'support':
+        return Colors.pink;
+      case 'wellness':
+        return Colors.green;
+      default:
+        return Colors.blue;
     }
   }
 }

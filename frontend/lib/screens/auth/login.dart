@@ -134,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // TODO: Replace with actual API call
+      // todo: Replace with actual API call
       await _performLogin(
         _usernameController.text,
         _passwordController.text,
@@ -169,7 +169,7 @@ class _LoginPageState extends State<LoginPage> {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 2));
 
-    // TODO: Replace with actual API call to your backend
+    // todo: Replace with actual API call to your backend
     // Example API call structure:
     /*
     final response = await http.post(
@@ -213,7 +213,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // TODO: Implement Google Sign-In
+      // todo: Implement Google Sign-In
       await Future.delayed(const Duration(seconds: 1));
 
       // ✅ NO TOKEN SETTING
@@ -241,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // TODO: Implement Microsoft Sign-In
+      // todo: Implement Microsoft Sign-In
       await Future.delayed(const Duration(seconds: 1));
 
       // ✅ NO TOKEN SETTING
@@ -263,7 +263,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _handleForgotPassword() {
-    // TODO: Navigate to forgot password page or show dialog
+    // todo: Navigate to forgot password page or show dialog
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

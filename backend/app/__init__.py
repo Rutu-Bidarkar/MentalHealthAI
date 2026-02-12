@@ -25,7 +25,14 @@ def create_app(config_class=Config):
     
     from app.routes.community_routes import community_bp
     app.register_blueprint(community_bp, url_prefix='/api/community')
-    
+
+    # ✅ ADD THESE TWO
+    from app.routes.popslash import popslash_bp
+    app.register_blueprint(popslash_bp, url_prefix='/api/popslash')
+
+    from app.routes.memorylane import memorylane_bp
+    app.register_blueprint(memorylane_bp, url_prefix='/api/memorylane')
+
     @app.route('/')
     def index():
         return {'message': 'Mental Health Flask API', 'status': 'running'}

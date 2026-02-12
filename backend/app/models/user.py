@@ -1,6 +1,7 @@
 from app import db
 import uuid
 from datetime import datetime
+from app.models.community_models import UserBan
 
 class User(db.Model):
     __tablename__ = 'users'

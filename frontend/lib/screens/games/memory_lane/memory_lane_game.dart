@@ -171,7 +171,7 @@ class _MemoryLaneGameState extends State<MemoryLaneGame> {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withAlpha(230),
             blurRadius: 20,
             spreadRadius: 4,
           ),
@@ -185,7 +185,7 @@ class _MemoryLaneGameState extends State<MemoryLaneGame> {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withAlpha(204),
             blurRadius: 24,
             spreadRadius: 6,
           ),
@@ -215,7 +215,7 @@ class _MemoryLaneGameState extends State<MemoryLaneGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _showGameOverFlash
-          ? Colors.red.withOpacity(0.8)
+          ? Colors.red.withAlpha(204)
           : const Color(0xFF011F3F),
       body: SafeArea(
         child: Column(
