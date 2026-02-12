@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // Theme constants (assuming these exist in your theme.dart file)
 class AppTheme {
@@ -81,6 +83,12 @@ class _SignupPageState extends State<SignupPage> {
   String selectedLanguage = 'English';
   bool agreedTerms = false;
   bool agreedPrivacy = false;
+  bool _isLoading = false;
+
+  // API base URL (change to your backend IP)
+  static const String baseUrl = 'http://10.0.2.2:8000/api/auth'; // For Android emulator
+  // For iOS simulator use: 'http://localhost:8000/api/auth'
+  // For physical device use: 'http://YOUR_COMPUTER_IP:8000/api/auth'
 
   // Form controllers for Step 5
   final TextEditingController fullNameController = TextEditingController();
@@ -153,27 +161,117 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  void handleSubmit() {
-    // Collect all form data
-    final signupData = {
-      'userType': userType,
-      'ageGroup': ageGroup,
-      'token': token,
-      'language': selectedLanguage,
-      'fullName': fullNameController.text,
-      'username': usernameController.text,
-      'selectedAgeGroup': selectedAgeGroup,
-      'location': locationController.text,
-      'email': emailController.text,
-      'password': passwordController.text,
-      'agreedTerms': agreedTerms,
-      'agreedPrivacy': agreedPrivacy,
-    };
+  // Handle submit with API call - NO TOKEN SETTING
+  Future<void> handleSubmit() async {
+    // Validate passwords match
+    if (passwordController.text != confirmPasswordController.text) {
+      _showError('Passwords do not match');
+      return;
+    }
 
-    // todo: Send data to backend/state management
-    debugPrint('Signup Data: $signupData');
+    // Validate all required fields
+    if (fullNameController.text.isEmpty ||
+        usernameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        passwordController.text.isEmpty ||
+        locationController.text.isEmpty) {
+      _showError('Please fill in all required fields');
+      return;
+    }
 
-    Navigator.pushReplacementNamed(context, '/home');
+    setState(() => _isLoading = true);
+
+    try {
+      // Split full name into first and last name
+      final nameParts = fullNameController.text.trim().split(' ');
+      final firstName = nameParts.first;
+      final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+      // Prepare signup data for API
+      final signupData = {
+        'account_type': userType.toString().split('.').last,
+        'age_group': ageGroup == '18 and above' ? 'over_18' : 'under_18',
+        'username': usernameController.text.trim(),
+        'email': emailController.text.trim(),
+        'password': passwordController.text,
+        'first_name': firstName,
+        'last_name': lastName,
+        'city': locationController.text.trim(),
+        'country': 'India',
+        'language': selectedLanguage.toLowerCase(),
+        'terms_accepted': agreedTerms,
+        'privacy_accepted': agreedPrivacy,
+        'date_of_birth': '2000-01-01',
+      };
+
+      // Add organization/family specific fields
+      if (userType == UserType.organization || userType == UserType.family) {
+        signupData['organization_token'] = token;
+        signupData['organization_name'] = userType == UserType.organization 
+            ? 'Organization Name'
+            : 'Family Name';
+      }
+
+      // Determine endpoint
+      final endpoint = userType == UserType.individual
+          ? '$baseUrl/signup/individual'
+          : '$baseUrl/signup/organization';
+
+      debugPrint('🚀 Sending signup request to: $endpoint');
+      debugPrint('📦 Signup data: $signupData');
+
+      // Make API call
+      final response = await http.post(
+        Uri.parse(endpoint),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(signupData),
+      );
+
+      debugPrint('📥 Response status: ${response.statusCode}');
+      debugPrint('📥 Response body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        
+        // ✅ NO TOKEN SETTING - Community works without auth!
+
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? 'Account created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          // Navigate to home
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } else {
+        // Handle error
+        final errorData = json.decode(response.body);
+        _showError(errorData['error'] ?? 'Signup failed. Please try again.');
+      }
+    } catch (e) {
+      debugPrint('❌ Signup error: $e');
+      _showError('Network error. Please check your connection and try again.');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  // Helper method to show errors
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: AppTheme.colors.warning,
+        ),
+      );
+    }
   }
 
   bool get canProceed {
@@ -185,7 +283,7 @@ class _SignupPageState extends State<SignupPage> {
       case SignupStep.token:
         return userType == UserType.individual || token.isNotEmpty;
       case SignupStep.language:
-        return true; // Language has a default value
+        return true;
       case SignupStep.details:
         return agreedTerms && agreedPrivacy;
     }
@@ -237,7 +335,7 @@ class _SignupPageState extends State<SignupPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(width: 40), // Spacer for alignment
+                    const SizedBox(width: 40),
                   ],
                 ),
               ),
@@ -277,11 +375,14 @@ class _SignupPageState extends State<SignupPage> {
             child: SafeArea(
               top: false,
               child: _ActionButton(
-                onPressed: canProceed
+                onPressed: canProceed && !_isLoading
                     ? (step == SignupStep.details ? handleSubmit : handleNext)
                     : null,
-                text: step == SignupStep.details ? 'Create Account' : 'Next',
+                text: step == SignupStep.details 
+                    ? (_isLoading ? 'Creating Account...' : 'Create Account')
+                    : 'Next',
                 showChevron: step != SignupStep.details,
+                isLoading: _isLoading,
               ),
             ),
           ),
@@ -519,7 +620,6 @@ class _SignupPageState extends State<SignupPage> {
                     color: AppTheme.colors.accent,
                     fontWeight: FontWeight.w500,
                   ),
-                  // todo: Add GestureRecognizer for tap handling
                 ),
               ],
             ),
@@ -818,7 +918,6 @@ class _CheckboxRow extends StatelessWidget {
                     color: AppTheme.colors.primary,
                     fontWeight: FontWeight.w500,
                   ),
-                  // todo: Add GestureRecognizer for tap handling
                 ),
               ],
             ),
@@ -833,11 +932,13 @@ class _ActionButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String text;
   final bool showChevron;
+  final bool isLoading;
 
   const _ActionButton({
     required this.onPressed,
     required this.text,
     this.showChevron = false,
+    this.isLoading = false,
   });
 
   @override
@@ -849,7 +950,7 @@ class _ActionButtonState extends State<_ActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final isEnabled = widget.onPressed != null;
+    final isEnabled = widget.onPressed != null && !widget.isLoading;
 
     return GestureDetector(
       onTapDown: isEnabled ? (_) => setState(() => _isPressed = true) : null,
@@ -872,6 +973,17 @@ class _ActionButtonState extends State<_ActionButton> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                if (widget.isLoading) ...[
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 Text(
                   widget.text,
                   style: const TextStyle(
@@ -880,7 +992,7 @@ class _ActionButtonState extends State<_ActionButton> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                if (widget.showChevron) ...[
+                if (widget.showChevron && !widget.isLoading) ...[
                   const SizedBox(width: 8),
                   const Icon(
                     Icons.chevron_right,
