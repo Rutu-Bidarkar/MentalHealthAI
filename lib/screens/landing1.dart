@@ -184,20 +184,22 @@ class _Landing1State extends State<Landing1> {
 
   void _startAutoAdvance() {
     _autoAdvanceTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
       if (_pageController.hasClients && _currentPage < onboardingSlides.length - 1) {
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 800), // Slower for smooth flow
-          curve: Curves.easeInOut,
-        );
+        try {
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeInOut,
+          );
+        } catch (e) {
+          debugPrint("Error auto-advancing page: $e");
+          timer.cancel(); // Stop trying if it fails
+        }
       } else {
-        // Stop timer at end or loop? User said "change to next slide", usually implies loop or stop.
-        // But since it's onboarding, maybe stop at the end.
-        // Let's loop for effect or just stop? "change to the next slide" implies continuous.
-        // But it creates a UX issue if they want to read. 
-        // Given the short duration (2s), it might be too fast to read. 
-        // For now, I'll loop it to demo the flow, but usually this is bad UX.
-        // Wait, "change to the next slide after 2 seconds" implies a slideshow.
-        // I will stop at the last slide to allow them to click 'Get Started'.
         timer.cancel();
       }
     });

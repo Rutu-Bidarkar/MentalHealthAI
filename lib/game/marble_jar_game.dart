@@ -182,16 +182,7 @@ class JarBody extends BodyComponent {
       ..color = Colors.blue.withAlpha(20);
     canvas.drawPath(path, glassPaint);
 
-    // Draw reflections manually for flavor
-    final reflectionPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.5
-      ..color = Colors.white.withAlpha(80);
-      
-    final reflectionPath = Path();
-    reflectionPath.moveTo(-12, -10);
-    reflectionPath.quadraticBezierTo(-13, 0, -12, 10);
-    canvas.drawPath(reflectionPath, reflectionPaint);
+    // Reflection removed
   }
 }
 

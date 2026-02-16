@@ -12,10 +12,15 @@ import 'screens/activities.dart';
 import 'screens/community.dart';
 import 'screens/test_results_provider.dart';
 
+import 'services/theme_service.dart';
+
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => TestResultsProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TestResultsProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeService()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -26,12 +31,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeService = Provider.of<ThemeService>(context);
+
     return MaterialApp(
       title: 'Mental Health AI',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Inter',
-      ),
+      theme: ThemeService.lightTheme,
+      darkTheme: ThemeService.darkTheme,
+      themeMode: themeService.themeMode,
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
@@ -50,10 +56,10 @@ class MyApp extends StatelessWidget {
         '/assessment-history': (context) => Scaffold(appBar: AppBar(title: const Text('Assessment History')), body: const Center(child: Text('Coming Soon'))),
         '/achievements': (context) => Scaffold(appBar: AppBar(title: const Text('Achievements')), body: const Center(child: Text('Coming Soon'))),
         // Placeholder for profile page to prevent navigation errors
-        '/profile': (context) => const ProfileScreen(), // Assuming ProfileScreen exists and is imported
+        '/profile': (context) => const ProfileScreen(), 
         '/games': (context) => Scaffold(appBar: AppBar(title: const Text('Games')), body: const Center(child: Text('Games Page'))),
-        '/activities': (context) => const ActivitiesPage(), // Assuming ActivitiesPage exists
-        '/community': (context) => const CommunityPage(), // Assuming CommunityPage exists
+        '/activities': (context) => const ActivitiesPage(), 
+        '/community': (context) => const CommunityPage(), 
         '/consult': (context) => Scaffold(appBar: AppBar(title: const Text('Consult')), body: const Center(child: Text('Consult Page'))),
         '/reports': (context) => Scaffold(appBar: AppBar(title: const Text('Reports')), body: const Center(child: Text('Reports Page'))),
         '/test-construction': (context) => Scaffold(appBar: AppBar(title: const Text('Mental Health Test')), body: const Center(child: Text('Under Construction'))),

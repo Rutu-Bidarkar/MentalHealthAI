@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import '../models/mood_model.dart';
 import '../services/mood_tag_service.dart';
+import '../widgets/voice_sphere.dart';
 
 // Theme constants
 class AppTheme {
@@ -37,7 +38,6 @@ class AppShadows {
 
 // Models
 enum EntryMode { write, voice }
-enum AiTone { casual, supportive, professional, empathetic }
 
 class JournalTheme {
   final String name;
@@ -77,14 +77,9 @@ class JournalPage extends StatefulWidget {
 
 class _JournalPageState extends State<JournalPage> {
   // State variables
-  // State variables
   EntryMode _entryMode = EntryMode.write;
-  bool _aiEnabled = false;
-  AiTone? _selectedTone;
   bool _isRecording = false;
   bool _isSaving = false;
-  bool _showChatInterface = false;
-  List<ChatMessage> _chatMessages = [];
 
   // Theme & Font State
   late JournalTheme _currentTheme;
@@ -223,57 +218,6 @@ class _JournalPageState extends State<JournalPage> {
       ),
     );
   }
-  
-  Future<void> _toggleAiMode(bool value) async {
-    if (value) {
-      // Show Tone Selection
-      final selectedTone = await showDialog<AiTone>(
-        context: context,
-        builder: (context) => const _ToneSelectionDialog(),
-      );
-
-      if (selectedTone != null) {
-        setState(() {
-          _aiEnabled = true;
-          _selectedTone = selectedTone;
-          _showChatInterface = true;
-          _chatMessages = [
-            ChatMessage(
-              text: "Hello! I'm here to listen. How are you feeling today?", 
-              isUser: false, 
-              timestamp: DateTime.now()
-            )
-          ];
-        });
-      }
-    } else {
-      setState(() {
-        _aiEnabled = false;
-        _showChatInterface = false;
-        _selectedTone = null;
-        _chatMessages.clear();
-      });
-    }
-  }
-
-  void _handleChatSend(String text) {
-    setState(() {
-      _chatMessages.add(ChatMessage(text: text, isUser: true, timestamp: DateTime.now()));
-    });
-
-    // Mock AI Response
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _chatMessages.add(ChatMessage(
-            text: "That sounds interesting. Tell me more about it.",
-            isUser: false, 
-            timestamp: DateTime.now()
-          ));
-        });
-      }
-    });
-  }
 
   String _getFontName(TextStyle style) {
     // Helper to find font name from list based on style equality 
@@ -285,13 +229,17 @@ class _JournalPageState extends State<JournalPage> {
     return _fontNames.firstWhere((name) => GoogleFonts.getFont(name).fontFamily == style.fontFamily, orElse: () => 'Lato');
   }
 
+  // ... (Previous code)
+  
+  bool _isVoiceActive = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true, 
       body: Stack(
         children: [
-          // Background Layer: Blurred and Scaling to Cover
+          // Background Layer
           if (_currentTheme.backgroundPath.isNotEmpty)
             Positioned.fill(
               child: Image.asset(
@@ -304,98 +252,83 @@ class _JournalPageState extends State<JournalPage> {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
-                  color: Colors.black.withValues(alpha: 0.2), // Dim for text legibility
+                  color: Colors.black.withValues(alpha: 0.2), 
                 ),
               ),
             ),
 
-          // Middle Layer: Image fitted vertically - Centered (REMOVED as per user request)
-          // if (_currentTheme.backgroundPath.isNotEmpty)
-          //   Positioned.fill(
-          //     child: Center(
-          //       child: Image.asset(
-          //         _currentTheme.backgroundPath,
-          //         fit: BoxFit.fitHeight,
-          //       ),
-          //     ),
-          //   ),
-          
           // Foreground: Content
            SafeArea(
             child: Column(
               children: [
                 _buildHeader(),
                 Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
-                    transitionBuilder: (Widget child, Animation<double> animation) {
-                       final inAnimation = Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(animation);
-                       final outAnimation = Tween<Offset>(begin: const Offset(-1.0, 0.0), end: Offset.zero).animate(animation);
-                       
-                       if (child.key == const ValueKey('chat')) {
-                         return SlideTransition(position: inAnimation, child: child);
-                       } else {
-                         return SlideTransition(position: outAnimation, child: child);
-                       }
-                    },
-                    child: _showChatInterface
-                        ? _ChatInterface(
-                            key: const ValueKey('chat'),
-                            messages: _chatMessages,
-                            onSend: _handleChatSend,
-                            onBack: () => _toggleAiMode(false),
-                            tone: _selectedTone ?? AiTone.casual,
-                            fontStyle: _currentFont,
-                          )
-                        : SingleChildScrollView(
-                            key: const ValueKey('journal'),
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _TodayEntryCard(
-                                  date: _todayFormatted,
-                                  entryMode: _entryMode,
-                                  onModeChanged: (mode) => setState(() => _entryMode = mode),
-                                  entryController: _entryController,
-                                  entryFocus: _entryFocus,
-                                  wordCount: _wordCount,
-                                  isRecording: _isRecording,
-                                  onToggleRecording: () => setState(() => _isRecording = !_isRecording),
-                                  onSave: _saveEntry,
-                                  isSaving: _isSaving,
-                                  fontStyle: _currentFont,
-                                ),
-                                const SizedBox(height: 24),
-                                _AiAssistantCard(
-                                  aiEnabled: _aiEnabled,
-                                  onToggle: _toggleAiMode, // Updated callback
-                                  selectedTone: _selectedTone,
-                                  onToneSelected: (tone) => setState(() => _selectedTone = tone),
-                                   fontStyle: _currentFont,
-                                ),
-                                const SizedBox(height: 24),
-                                _PastEntriesSection(
-                                  entries: _pastEntries,
-                                   fontStyle: _currentFont,
-                                ),
-                              ],
+                  child: SingleChildScrollView(
+                    key: const ValueKey('journal'),
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _TodayEntryCard(
+                          date: _todayFormatted,
+                          entryMode: _entryMode,
+                          onModeChanged: (mode) => setState(() => _entryMode = mode),
+                          entryController: _entryController,
+                          entryFocus: _entryFocus,
+                          wordCount: _wordCount,
+                          isRecording: _isRecording,
+                          onToggleRecording: () => setState(() => _isRecording = !_isRecording),
+                          onSave: _saveEntry,
+                          isSaving: _isSaving,
+                          fontStyle: _currentFont,
+                        ),
+                        const SizedBox(height: 24),
+                        // Voice Assistant Button (Replaces Text Chat Card)
+                        Center(
+                          child: ElevatedButton.icon(
+                            onPressed: () => setState(() => _isVoiceActive = true),
+                            icon: const Icon(Icons.mic, color: Colors.white),
+                            label: Text("Talk to AI Assistant", style: _currentFont.copyWith(color: Colors.white)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.accent,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                              elevation: 4,
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 24),
+                        _PastEntriesSection(
+                          entries: _pastEntries,
+                           fontStyle: _currentFont,
+                        ),
+                        const SizedBox(height: 80), // Space for FAB if needed
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+          
+          // Voice Assistant Overlay
+          if (_isVoiceActive)
+            Positioned.fill(
+              child: VoiceSphere(
+                isListening: _isVoiceActive,
+                onStop: () => setState(() => _isVoiceActive = false),
+              ),
+            ),
         ],
       ),
     );
   }
 
+  // Header and other small widgets remain...
   Widget _buildHeader() {
+     // ... (Keep existing header code)
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      // No background for header to show theme, or translucent
        decoration: BoxDecoration(
         color: _currentTheme.backgroundPath.isEmpty 
             ? AppColors.cardBackground 
@@ -432,6 +365,10 @@ class _JournalPageState extends State<JournalPage> {
     );
   }
 }
+
+// ... Cards and Dialogs (Keep EntryCard, PastEntries, MoodFeedback, etc.)
+// ... REMOVE _AiAssistantCard and _ChatInterface classes from here or comment them out.
+
 
 class _TodayEntryCard extends StatelessWidget {
   final String date;
@@ -645,14 +582,6 @@ class MoodFeedbackResult {
   final List<String> tags;
 
   MoodFeedbackResult(this.mood, this.tags);
-}
-
-class ChatMessage {
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-
-  ChatMessage({required this.text, required this.isUser, required this.timestamp});
 }
 
 class _MoodFeedbackDialog extends StatefulWidget {
@@ -1005,245 +934,4 @@ class _AppearanceSettings extends StatelessWidget {
   }
 }
 
-class _AiAssistantCard extends StatelessWidget {
-  final bool aiEnabled;
-  final ValueChanged<bool> onToggle;
-  final AiTone? selectedTone;
-  final ValueChanged<AiTone?> onToneSelected;
-  final TextStyle fontStyle;
-
-  const _AiAssistantCard({
-    required this.aiEnabled,
-    required this.onToggle,
-    this.selectedTone,
-    required this.onToneSelected,
-    required this.fontStyle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        boxShadow: const [AppShadows.card],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text('🤖', style: TextStyle(fontSize: 24)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'AI Assistant',
-                  style: fontStyle.copyWith(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Switch(
-                value: aiEnabled,
-                onChanged: onToggle,
-                activeTrackColor: AppColors.primary,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ToneSelectionDialog extends StatelessWidget {
-  const _ToneSelectionDialog();
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Choose AI Tone',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            ...AiTone.values.map((tone) => ListTile(
-              title: Text(tone.toString().split('.').last.capitalize()),
-              leading: const Icon(Icons.record_voice_over_outlined),
-              onTap: () => Navigator.pop(context, tone),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              hoverColor: Colors.grey[100],
-            )),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-extension StringExtension on String {
-  String capitalize() {
-    if (this.isEmpty) return this;
-    return "${this[0].toUpperCase()}${substring(1)}";
-  }
-}
-
-class _ChatInterface extends StatefulWidget {
-  final List<ChatMessage> messages;
-  final ValueChanged<String> onSend;
-  final VoidCallback onBack;
-  final AiTone tone;
-  final TextStyle fontStyle;
-
-  const _ChatInterface({
-    super.key,
-    required this.messages,
-    required this.onSend,
-    required this.onBack,
-    required this.tone,
-    required this.fontStyle,
-  });
-
-  @override
-  State<_ChatInterface> createState() => _ChatInterfaceState();
-}
-
-class _ChatInterfaceState extends State<_ChatInterface> {
-  final TextEditingController _controller = TextEditingController();
-
-  void _handleSend() {
-    if (_controller.text.trim().isEmpty) return;
-    widget.onSend(_controller.text);
-    _controller.clear();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [AppShadows.card],
-      ),
-      margin: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: widget.onBack, 
-                  icon: const Icon(Icons.arrow_back),
-                ),
-                const SizedBox(width: 8),
-                const CircleAvatar(
-                  backgroundColor: AppColors.primary,
-                  child: Text('AI', style: TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'AI Assistant',
-                      style: widget.fontStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Text(
-                      widget.tone.toString().split('.').last.capitalize(),
-                      style: widget.fontStyle.copyWith(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          
-          // Messages
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: widget.messages.length,
-              itemBuilder: (context, index) {
-                final msg = widget.messages[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    mainAxisAlignment: msg.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    children: [
-                      if (!msg.isUser) ...[
-                        const CircleAvatar(radius: 12, backgroundColor: AppColors.primary, child: Icon(Icons.smart_toy, size: 14, color: Colors.white)),
-                        const SizedBox(width: 8),
-                      ],
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: msg.isUser ? AppColors.primary : Colors.grey[200],
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(16),
-                              topRight: const Radius.circular(16),
-                              bottomLeft: Radius.circular(msg.isUser ? 16 : 4),
-                              bottomRight: Radius.circular(msg.isUser ? 4 : 16),
-                            ),
-                          ),
-                          child: Text(
-                            msg.text,
-                            style: widget.fontStyle.copyWith(
-                              color: msg.isUser ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (msg.isUser) ...[
-                        const SizedBox(width: 8),
-                        const CircleAvatar(radius: 12, backgroundColor: Colors.grey, child: Icon(Icons.person, size: 14, color: Colors.white)),
-                      ],
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          
-          // Input
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    ),
-                    onSubmitted: (_) => _handleSend(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                   onPressed: _handleSend,
-                   icon: const Icon(Icons.send, color: AppColors.primary),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// End of Journal Page

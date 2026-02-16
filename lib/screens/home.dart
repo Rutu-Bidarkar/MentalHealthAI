@@ -9,7 +9,11 @@ import 'activities.dart';
 import 'community.dart';
 import 'profile_screen.dart';
 import 'tests.dart';
-import 'journal.dart'; // Uncommented import
+import 'journal.dart'; 
+import 'ai_chat_screen.dart';
+
+import 'package:provider/provider.dart';
+import '../services/theme_service.dart';
 
 // QuickAccessTab class
 class QuickAccessTab {
@@ -36,6 +40,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
 
   final List<QuickAccessTab> quickAccessTabs = const [
@@ -184,61 +189,156 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     // List of pages for Bottom Navigation
     final List<Widget> pages = [
-      _buildHomeContent(),
+      _buildHomeContent(context), // Pass context
       const TestsPage(),
-      const JournalPage(), // Changed to JournalPage
+      const JournalPage(), 
       const ProfileScreen(),
     ];
 
-    // Safety check for index out of bounds (can happen during hot reload if pages count changes)
     if (_selectedIndex >= pages.length) {
       _selectedIndex = 0;
     }
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: _buildDrawer(context),
       body: pages[_selectedIndex],
+      floatingActionButton: _selectedIndex == 0 
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AiChatScreen()),
+                );
+              },
+              backgroundColor: theme.colorScheme.primary,
+              child: const Icon(Icons.smart_toy, color: Colors.white),
+              tooltip: "AI Assistant",
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: HomeColors.primary,
-        unselectedItemColor: HomeColors.textSecondary,
+        selectedItemColor: theme.colorScheme.primary,
+        unselectedItemColor: isDark ? Colors.grey[400] : HomeColors.textSecondary,
+        backgroundColor: theme.cardColor,
         showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.assignment_outlined),
-          activeIcon: Icon(Icons.assignment),
-          label: 'Tests',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.book_outlined), // Journal icon
-          activeIcon: Icon(Icons.book),
-          label: 'Journal', // Changed from Activities
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
-          label: 'Profile',
-        ),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_outlined),
+            activeIcon: Icon(Icons.assignment),
+            label: 'Tests',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book_outlined),
+            activeIcon: Icon(Icons.book),
+            label: 'Journal',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildHomeContent() {
+  Widget _buildDrawer(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeService = Provider.of<ThemeService>(context, listen: false);
+    
+    return Drawer(
+      child: Container(
+        color: theme.scaffoldBackgroundColor,
+        child: Column(
+          children: [
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              accountName: const Text("Avantika", style: TextStyle(fontWeight: FontWeight.bold)),
+              accountEmail: const Text("avantika@example.com"),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Text(
+                  "A",
+                  style: TextStyle(fontSize: 24, color: theme.colorScheme.primary),
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  // Quick Access Items from the list
+                  ...quickAccessTabs.map((tab) => ListTile(
+                    leading: Icon(tab.icon, color: theme.iconTheme.color),
+                    title: Text(tab.label, style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      Navigator.pushNamed(context, tab.path);
+                    },
+                  )),
+                  const Divider(),
+                  // Theme Toggle in Drawer
+                  Consumer<ThemeService>(
+                    builder: (context, service, _) => SwitchListTile(
+                      title: Text("Dark Mode", style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
+                      secondary: Icon(service.isDarkMode ? Icons.dark_mode : Icons.light_mode, color: theme.iconTheme.color),
+                      value: service.isDarkMode,
+                      onChanged: (_) => service.toggleTheme(),
+                      activeColor: theme.colorScheme.primary,
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.settings, color: theme.iconTheme.color),
+                    title: Text("Settings", style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/profile'); // Or settings page
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                "MindfulCare v1.0",
+                style: TextStyle(color: theme.disabledColor, fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _buildHomeContent(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            HomeColors.background,
-            HomeColors.cardBackground,
+            theme.scaffoldBackgroundColor,
+            theme.cardColor,
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -249,9 +349,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // Background texture
           Positioned.fill(
             child: Opacity(
-              opacity: 0.05,
+              opacity: isDark ? 0.02 : 0.05,
               child: CustomPaint(
-                painter: DotPatternPainter(),
+                painter: DotPatternPainter(color: theme.colorScheme.primary),
               ),
             ),
           ),
@@ -259,18 +359,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // Main content
           Column(
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildGreeting(),
+                      _buildGreeting(context),
                       const SizedBox(height: 24),
-                      _buildMoodJarSection(),
+                      _buildMoodJarSection(context),
                       const SizedBox(height: 24),
-                      _buildQuickAccess(),
+                      _buildQuickAccess(context),
                       const SizedBox(height: 20), 
                     ],
                   ),
@@ -283,61 +383,86 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 48, 24, 16),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(204),
+        color: theme.appBarTheme.backgroundColor?.withAlpha(204) ?? theme.cardColor.withAlpha(204),
         boxShadow: [HomeTheme.cardShadow],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Build sliding options or menu here later
           IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {},
+            icon: Icon(Icons.menu, color: theme.iconTheme.color),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
-          const Row(
+          Row(
             children: [
-              Text('🧘', style: TextStyle(fontSize: 24)),
-              SizedBox(width: 8),
+              const Text('🧘', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 8),
               Text(
                 'MindfulCare',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: HomeColors.textPrimary,
+                  color: theme.textTheme.titleLarge?.color ?? theme.colorScheme.onSurface,
                 ),
               ),
             ],
           ),
-          GestureDetector(
-            onTap: () => setState(() => _selectedIndex = 4), // Go to Profile tab
-            child: CircleAvatar(
-              backgroundColor: HomeColors.primary.withAlpha(50),
-              child: Text(
-                userName.substring(0, 1),
-                style: const TextStyle(
-                    color: HomeColors.primary, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              // Theme Toggle
+              Consumer<ThemeService>(
+                builder: (context, service, _) => IconButton(
+                  icon: Icon(
+                    service.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                    color: theme.iconTheme.color,
+                  ),
+                  onPressed: service.toggleTheme,
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              // Profile Button - Go to Profile Screen
+              GestureDetector(
+                onTap: () {
+                  // Direct navigation to Profile Screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                  );
+                }, 
+                child: CircleAvatar(
+                  backgroundColor: theme.colorScheme.primary.withAlpha(50),
+                  child: Text(
+                    userName.substring(0, 1),
+                    style: TextStyle(
+                        color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGreeting() {
+  Widget _buildGreeting(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "$greeting, $userName! $greetingEmoji",
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: HomeColors.textPrimary,
+            color: theme.textTheme.bodyLarge?.color ?? theme.colorScheme.onBackground,
           ),
         ),
         const SizedBox(height: 8),
@@ -347,9 +472,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildAssessmentBanner() {
-    // Changed to a button style as requested
     return GestureDetector(
-      onTap: () => setState(() => _selectedIndex = 1), // Go to Tests tab
+      onTap: () => setState(() => _selectedIndex = 1),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -383,27 +507,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildMoodJarSection() {
+  Widget _buildMoodJarSection(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: HomeColors.cardBackground,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(HomeTheme.borderRadius),
             boxShadow: [HomeTheme.cardShadow],
           ),
           child: PhysicsMarbleJar(
             marbles: collectedMarbles.map((m) => m.mood).toList(),
             onMarbleAdded: _addMarbleToJar,
-            onClearJar: _showJarFullDialog, // Connect to dialog
+            onClearJar: _showJarFullDialog,
             onReport: _addToReport,
           ),
         ),
          const SizedBox(height: 16),
-         // Test Button below jar
          HoverButton(
-           onPressed: () => Navigator.pushNamed(context, '/test-construction'), // Changed route
+           onPressed: () => Navigator.pushNamed(context, '/test-construction'),
            label: "Take a Mental Health Test",
            icon: Icons.assignment_outlined,
            gradient: AppGradients.ocean,
@@ -412,16 +536,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildQuickAccess() {
+  Widget _buildQuickAccess(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Quick Access",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: HomeColors.textPrimary,
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
         const SizedBox(height: 16),
@@ -429,10 +554,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 6, // Increased from 3 to 6 to reduce size by ~50%
+            crossAxisCount: 6,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 0.8, // Adjusted for new width
+            childAspectRatio: 0.8,
           ),
           itemCount: quickAccessTabs.length,
           itemBuilder: (context, index) {
@@ -444,6 +569,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 }
+
 
 class HoverButton extends StatefulWidget {
   final VoidCallback onPressed;
@@ -512,6 +638,7 @@ class _HoverButtonState extends State<HoverButton> {
   }
 }
 
+
 class _QuickAccessCard extends StatefulWidget {
   final QuickAccessTab tab;
   const _QuickAccessCard({required this.tab});
@@ -525,6 +652,8 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -535,7 +664,7 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
           duration: const Duration(milliseconds: 200),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                  BoxShadow(
@@ -552,7 +681,7 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
                   child: Container(
                     margin: const EdgeInsets.all(8),
                     padding: widget.tab.label == "Dashboard" 
-                        ? const EdgeInsets.all(28) // Further increased padding for Dashboard to reduce size
+                        ? const EdgeInsets.all(28)
                         : const EdgeInsets.all(20), 
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -569,8 +698,8 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
                   child: Text(
                     widget.tab.label,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: HomeColors.textPrimary,
+                    style: TextStyle(
+                      color: theme.textTheme.bodyMedium?.color,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -586,10 +715,13 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
 }
 
 class DotPatternPainter extends CustomPainter {
+  final Color color;
+  DotPatternPainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = HomeColors.primary.withAlpha(25)
+      ..color = color.withAlpha(25)
       ..style = PaintingStyle.fill;
 
     const spacing = 25.0;

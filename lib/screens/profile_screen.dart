@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../services/theme_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -621,52 +623,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-        itemCount: badges.length,
-        itemBuilder: (context, index) {
-          final badge = badges[index];
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        alignment: WrapAlignment.start,
+        children: badges.map((badge) {
           final earned = badge['earned'] as bool;
-          
+          final icon = badge['icon'] as String;
+          final name = badge['name'] as String;
+
           return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: earned ? const Color(0xFFFFF8E1) : const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(12),
+              color: earned ? const Color(0xFFFFF8E1) : Colors.grey.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20), // Pill shape
               border: Border.all(
                 color: earned ? const Color(0xFFF4C96F) : Colors.transparent,
-                width: 2,
+                width: 1,
               ),
+              boxShadow: earned ? [
+                 BoxShadow(
+                  color: const Color(0xFFF4C96F).withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                )
+              ] : null,
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  badge['icon'] as String,
+                  icon,
                   style: TextStyle(
-                    fontSize: 32,
-                    color: earned ? null : Colors.black.withValues(alpha: 0.3),
+                    fontSize: 16,
+                    color: earned ? null : Colors.grey,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(width: 8),
                 Text(
-                  badge['name'] as String,
-                  textAlign: TextAlign.center,
+                  name,
                   style: TextStyle(
-                    fontSize: 10,
-                    color: earned ? const Color(0xFF2D3748) : const Color(0xFF718096),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: earned ? const Color(0xFF2D3748) : Colors.grey,
                   ),
                 ),
               ],
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }
@@ -980,6 +986,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showLanguageSelector() {
+    final languages = [
+      'English',
+      'हिन्दी (Hindi)',
+      'मराठी (Marathi)',
+      'ગુજરાતી (Gujarati)',
+      'தமிழ் (Tamil)',
+      'తెలుగు (Telugu)',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Language'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: languages.map((lang) {
+            return RadioListTile<String>(
+              title: Text(lang),
+              value: lang.split(' ').first,
+              groupValue: selectedLanguage,
+              onChanged: (value) {
+                setState(() => selectedLanguage = value!);
+                _saveUserData();
+                Navigator.pop(context);
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  void _showThemeSelector() {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
+    
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Select Theme',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3748),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.light_mode),
+                title: const Text('Light'),
+                trailing: !themeService.isDarkMode ? const Icon(Icons.check, color: Color(0xFF6B9BD1)) : null,
+                onTap: () {
+                  if (themeService.isDarkMode) themeService.toggleTheme();
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.dark_mode),
+                title: const Text('Dark'),
+                trailing: themeService.isDarkMode ? const Icon(Icons.check, color: Color(0xFF6B9BD1)) : null,
+                onTap: () {
+                  if (!themeService.isDarkMode) themeService.toggleTheme();
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _showPrivacySettings() {
     showModalBottomSheet(
       context: context,
@@ -1029,79 +1117,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showLanguageSelector() {
-    final languages = [
-      'English',
-      'हिन्दी (Hindi)',
-      'मराठी (Marathi)',
-      'ગુજરાતી (Gujarati)',
-      'தமிழ் (Tamil)',
-      'తెలుగు (Telugu)',
-    ];
-
+  void _confirmClearData() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Language'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: languages.map((lang) {
-            return RadioListTile<String>(
-              title: Text(lang),
-              value: lang.split(' ').first,
-              groupValue: selectedLanguage,
-              onChanged: (value) {
-                setState(() => selectedLanguage = value!);
-                _saveUserData();
-                Navigator.pop(context);
-              },
-            );
-          }).toList(),
+        title: const Text('Clear Mood Jar?'),
+        content: const Text(
+          'This will permanently delete all marbles from your jar. '
+          'This action cannot be undone.',
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // In a real app, clear data provider
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Mood jar cleared')),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF4C96F),
+            ),
+            child: const Text('Clear'),
+          ),
+        ],
       ),
     );
   }
 
-  void _showThemeSelector() {
+  void _confirmDeleteAccount() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Theme'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<String>(
-              title: const Text('Light'),
-              value: 'Light',
-              groupValue: selectedTheme,
-              onChanged: (value) {
-                setState(() => selectedTheme = value!);
-                _saveUserData();
-                Navigator.pop(context);
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Dark'),
-              value: 'Dark',
-              groupValue: selectedTheme,
-              onChanged: (value) {
-                setState(() => selectedTheme = value!);
-                _saveUserData();
-                Navigator.pop(context);
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Auto (System)'),
-              value: 'Auto',
-              groupValue: selectedTheme,
-              onChanged: (value) {
-                setState(() => selectedTheme = value!);
-                _saveUserData();
-                Navigator.pop(context);
-              },
-            ),
-          ],
+        title: const Text('Delete Account?'),
+        content: const Text(
+          'Are you sure you want to delete your account? '
+          'All your data will be permanently lost.',
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to login or perform delete logic
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE89E98),
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
       ),
     );
   }
@@ -1134,62 +1206,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
             },
             child: const Text('Export'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmClearData() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Mood Jar?'),
-        content: const Text(
-          'This will remove all marbles from your jar. Your history will still be saved in reports.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Call clear jar function
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF4C96F),
-            ),
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDeleteAccount() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Account?'),
-        content: const Text(
-          'This action is permanent and cannot be undone. All your data will be deleted.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Call delete account API
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE89E98),
-            ),
-            child: const Text('Delete'),
           ),
         ],
       ),
