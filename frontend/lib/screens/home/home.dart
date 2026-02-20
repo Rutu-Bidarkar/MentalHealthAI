@@ -1,6 +1,7 @@
 // home_page.dart
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import '../../services/screen_time_service.dart';
 
 // Theme constants (ideally in a separate theme.dart file)
 class AppTheme {
@@ -228,10 +229,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool showAssessmentBanner = true;
   final String userName = "Alex";
 
+  void _initScreenTime() async {
+    bool granted = await ScreenTimeService.requestPermission();
+    print("Screen time permission: $granted");
+  }
+
   @override
   void initState() {
     super.initState();
     collectedMarbles = _generatePastMarbles();
+    _initScreenTime();
   }
 
   String get greeting {

@@ -14,7 +14,7 @@ def create_app(config_class=Config):
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app)
     
     # Register blueprints
     from app.routes.auth import auth_bp
@@ -26,12 +26,15 @@ def create_app(config_class=Config):
     from app.routes.community_routes import community_bp
     app.register_blueprint(community_bp, url_prefix='/api/community')
 
-    # ✅ ADD THESE TWO
     from app.routes.popslash import popslash_bp
     app.register_blueprint(popslash_bp, url_prefix='/api/popslash')
 
     from app.routes.memorylane import memorylane_bp
     app.register_blueprint(memorylane_bp, url_prefix='/api/memorylane')
+
+    # ✅ Psychologist routes
+    from app.routes.psychologist import psychologist_bp
+    app.register_blueprint(psychologist_bp, url_prefix='/api/psychologists')
 
     @app.route('/')
     def index():

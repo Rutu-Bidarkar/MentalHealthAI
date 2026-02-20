@@ -9,6 +9,7 @@ import 'screens/tests_temp.dart';
 import 'screens/test_results_provider.dart';
 import 'screens/games/games_page.dart';
 import 'screens/community/community_page.dart';
+import 'screens/consultancy/consultancy_page.dart';
 
 void main() {
   runApp(
@@ -26,10 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mental Health AI',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Inter',
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Inter'),
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
@@ -38,12 +36,17 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignupPage(),
         '/home': (context) => const HomeScreen(),
         '/tests': (context) => TestsPage(),
-        '/test/baseline': (context) => const DynamicTestPage(testId: 'baseline'),
-        '/test/anxiety': (context) => const DynamicTestPage(testId: 'anxiety-screening'),
-        '/test/depression': (context) => const DynamicTestPage(testId: 'depression-screening'),
-        '/test/stress': (context) => const DynamicTestPage(testId: 'stress-resilience'),
+        '/test/baseline': (context) =>
+            const DynamicTestPage(testId: 'baseline'),
+        '/test/anxiety': (context) =>
+            const DynamicTestPage(testId: 'anxiety-screening'),
+        '/test/depression': (context) =>
+            const DynamicTestPage(testId: 'depression-screening'),
+        '/test/stress': (context) =>
+            const DynamicTestPage(testId: 'stress-resilience'),
         '/games': (context) => const GamesPage(),
         '/community': (context) => const CommunityPage(),
+        '/consultancy': (context) => ConsultancyPage(),
       },
     );
   }

@@ -6,7 +6,7 @@ from app.models.community_models import *
 from werkzeug.security import generate_password_hash
 from app.models.popslash_session import PopSlashSession
 from app.models.memorylane_session import MemoryLaneSession
-
+from app.models.consultation_request import ConsultationRequest
 def init_database():
     """Initialize the database with tables"""
     
@@ -18,7 +18,7 @@ def init_database():
         print("✅ Database tables created successfully!")
         
         # Create test user
-        if User.query.count() == 0:
+        if not User.query.filter_by(email="test@example.com").first():
             test_user = User(
                 username='testuser',
                 email='test@example.com',

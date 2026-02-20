@@ -16,6 +16,12 @@ dependencies:
   http: ^1.2.1
   provider: ^6.1.2
 
+  # 🧠 Screen time tracking
+  usage_stats: ^1.3.0
+
+  # 📍 User location
+  geolocator: ^10.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

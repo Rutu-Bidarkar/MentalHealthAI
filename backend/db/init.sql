@@ -55,3 +55,35 @@ VALUES
     ('org-token-1', 'ORG1234567890', 'organization', 'Test Organization', 50, true),
     ('family-token-1', 'FAM1234567890', 'family', 'Test Family', 20, true)
 ON CONFLICT (token) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS consultation_requests (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(36) REFERENCES users(id),
+    psychologist_id INT REFERENCES psychologists(id),
+    message TEXT,
+    preferred_date DATE,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ================= CONSULT REQUESTS (EXTERNAL PSYCHOLOGISTS) =================
+CREATE TABLE IF NOT EXISTS consultation_requests (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(36) REFERENCES users(id),
+
+    psychologist_name VARCHAR(150),
+    specialization VARCHAR(150),
+    clinic_address TEXT,
+    city VARCHAR(100),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    place_id VARCHAR(150),
+
+    message TEXT,
+    preferred_date DATE,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_consult_requests_user ON consultation_requests(user_id);
+CREATE INDEX idx_consult_requests_city ON consultation_requests(city);
