@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>{{ patient.name }} | MindfulCare</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='consultant/css/portal.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    {% include 'consultant/_sidebar.html' %}
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-left">
+                <div style="font-size:13px;color:var(--text-sm);margin-bottom:4px;">
+                    <a href="{{ url_for('consultant.patients') }}" style="color:var(--blue);text-decoration:none;">←
+                        Back to Patients</a>
+                </div>
+                <h1>{{ patient.name }}</h1>
+                <div class="subtitle">{{ patient.age }}, {{ patient.gender }} · {{ patient.profession }} · {{
+                    patient.location }}</div>
+            </div>
+            <div class="topbar-right">
+                <button class="btn btn-primary btn-sm">📅 Schedule Session</button>
+                <button class="btn btn-outline btn-sm">💬 Message</button>
+                <button class="btn btn-outline btn-sm">📝 Add Note</button>
+                <span
+                    class="badge {% if patient.risk=='high' %}badge-red{% elif patient.risk=='medium' %}badge-yellow{% else %}badge-green{% endif %}"
+                    style="font-size:13px;padding:8px 14px;">
+                    {% if patient.risk=='high' %}🔴 HIGH RISK{% elif patient.risk=='medium' %}🟡 AT RISK{% else %}🟢
+                    STABLE{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- Top summary cards -->
+            <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+                <div class="stat-card">
+                    <div class="icon-bubble bubble-blue">📅</div>
+                    <div class="stat-num">{{ patient.sessions }}</div>
+                    <div class="stat-label">Total Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-bubble bubble-green">📓</div>
+                    <div class="stat-num">{{ patient.journal_entries }}</div>
+                    <div class="stat-label">Journal Entries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-bubble bubble-yellow">😊</div>
+                    <div class="stat-num">{{ patient.avg_mood }}</div>
+                    <div class="stat-label">Avg Mood Score</div>
+                    {% if patient.avg_mood < 6 %}<div class="stat-trend negative">⚠️ Below threshold
+                </div>{% endif %}
+            </div>
+            <div class="stat-card">
+                <div class="icon-bubble bubble-red">📋</div>
+                <div class="stat-num">{{ total_rows }}</div>
+                <div class="stat-label">Data Points</div>
+            </div>
+        </div>
+
+        <!-- 2-col layout -->
+        <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:24px;margin-bottom:24px;">
+
+            <!-- Trend chart -->
+            <div class="card">
+                <div class="section-header">
+                    <h2>📈 Emotional Well-being Trend (Last 30 Days)</h2>
+                    <a href="{{ url_for('consultant.api_trend', uid=patient.id) }}" target="_blank"
+                        style="color:var(--text-sm);font-size:12px;">Export Data →</a>
+                </div>
+                <div class="chart-container"><canvas id="trendChart"></canvas></div>
+                <div style="display:flex;gap:14px;margin-top:14px;font-size:12px;color:var(--text-sm);">
+                    <span>─── Mood score</span>
+                    <span style="color:rgba(231,76,60,.7);">- - - Concern threshold (6.0)</span>
+                </div>
+            </div>
+
+            <!-- Assessment scores -->
+            <div class="card">
+                <div class="section-header">
+                    <h2>🧠 Assessment Scores</h2><a href="{{ url_for('consultant.patients') }}">View History →</a>
+                </div>
+
+                {% for label, score, max_score, key in [
+                ("PHQ-9 (Depression)", patient.avg_depression, 27, "dep"),
+                ("GAD-7 (Anxiety)", patient.avg_anxiety, 21, "anx"),
+                ("Mood Score", patient.avg_mood, 10, "mood")
+                ] %}
+                {% set pct = (score / max_score * 100)|round|int %}
+                {% set severity = "HIGH" if (score > 15 and max_score > 10) or (score < 4 and max_score==10)
+                    else "MODERATE" if (score> 10 and max_score > 10) or (score < 6 and max_score==10) else "MILD" %} {%
+                        set color="#e74c3c" if severity=="HIGH" else "#f39c12" if severity=="MODERATE" else "#27ae60" %}
+                        <div style="margin-bottom:18px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                            <span style="font-weight:600;font-size:14px;">{{ label }}</span>
+                            <span style="font-weight:700;font-size:14px;color:{{ color }};">{{ score }} / {{ max_score
+                                }}</span>
+                        </div>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar-fill" style="width:{{ pct }}%;background:{{ color }};"></div>
+                        </div>
+                        <div
+                            style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--text-sm);">
+                            <span>{{ pct }}%</span>
+                            <span
+                                class="badge {% if severity=='HIGH' %}badge-red{% elif severity=='MODERATE' %}badge-yellow{% else %}badge-green{% endif %}">{{
+                                severity }}</span>
+                        </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+
+        <!-- Session notes (private) -->
+        <div class="card">
+            <div class="section-header">
+                <h2>🔏 Session Notes (Private)</h2><button class="btn btn-primary btn-sm">+ Add Note</button>
+            </div>
+            {% for note in [
+            {"session":"Session "+patient.sessions|string, "date": patient.last_date, "type":"Follow-up",
+            "complaints":["Work-related stress intensifying","Sleep issues (3–4 hrs/night)","Avoiding social
+            situations"],
+            "observations":["Appeared tired, less engaged","Sleep improving gradually","Medication compliance: Good"],
+            "interventions":["CBT techniques applied","Sleep hygiene psychoeducation","Assigned: Gratitude journal
+            daily"],
+            "next":["Follow-up in one week","Continue current treatment plan"]}
+            ] %}
+            <div style="background:var(--bg);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                    <div>
+                        <span style="font-weight:700;">{{ note.session }}</span>
+                        <span style="color:var(--text-sm);font-size:13px;margin-left:8px;">· {{ note.date }} · {{
+                            note.type }}</span>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button class="btn btn-outline btn-sm">✏️ Edit</button>
+                        <button class="btn btn-outline btn-sm">🖨️ Print</button>
+                    </div>
+                </div>
+                <div style="font-size:13px;">
+                    <div style="font-weight:600;margin-bottom:4px;">Chief Complaints</div>
+                    {% for c in note.complaints %}<div style="padding:2px 0;color:var(--text-sm);">• {{ c }}</div>{%
+                    endfor %}
+                    <div style="font-weight:600;margin:10px 0 4px;">Observations</div>
+                    {% for o in note.observations %}<div style="padding:2px 0;color:var(--text-sm);">• {{ o }}</div>{%
+                    endfor %}
+                    <div style="font-weight:600;margin:10px 0 4px;">Interventions</div>
+                    {% for i in note.interventions %}<div style="padding:2px 0;color:var(--text-sm);">• {{ i }}</div>{%
+                    endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            <div style="font-size:11px;color:var(--text-sm);margin-top:8px;">🔒 Notes are encrypted and HIPAA-compliant.
+                Only you can access these.</div>
+        </div>
+
+        <!-- Alerts / flags -->
+        <div>
+            {% if patient.risk == 'high' %}
+            <div class="alert-box red" style="margin-bottom:16px;">
+                <div class="alert-title">🔴 HIGH RISK ALERT</div>
+                <ul style="font-size:13px;margin-left:16px;margin-top:8px;margin-bottom:12px;">
+                    <li>PHQ-9 score: {{ patient.avg_depression }} (Moderately Severe)</li>
+                    <li>GAD-7 score: {{ patient.avg_anxiety }} (Moderate-High Anxiety)</li>
+                    <li>Mood consistently below threshold</li>
+                    <li>Elevated stress across multiple check-ins</li>
+                </ul>
+                <div style="font-weight:600;font-size:13px;margin-bottom:8px;">Recommended Actions:</div>
+                {% for a in ["Schedule urgent check-in call","Send supportive message","Review crisis
+                protocol","Consider medication adjustment"] %}
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;">
+                    <input type="checkbox" style="accent-color:var(--blue);">{{ a }}
+                </div>
+                {% endfor %}
+                <div style="display:flex;gap:8px;margin-top:12px;">
+                    <button class="btn btn-danger btn-sm">Take Action</button>
+                    <button class="btn btn-outline btn-sm">Mark Addressed</button>
+                </div>
+            </div>
+            {% elif patient.risk == 'medium' %}
+            <div class="alert-box yellow" style="margin-bottom:16px;">
+                <div class="alert-title">🟡 MODERATE RISK</div>
+                <p style="font-size:13px;">Patient shows moderate scores across assessments. Schedule a check-in session
+                    soon.</p>
+            </div>
+            {% else %}
+            <div class="alert-box"
+                style="background:var(--green-light);border:1px solid var(--green);margin-bottom:16px;">
+                <div class="alert-title" style="color:#1e8449;">🟢 STABLE</div>
+                <p style="font-size:13px;">Patient progress is on track. Continue current treatment plan.</p>
+            </div>
+            {% endif %}
+
+            <!-- Recent journal entries -->
+            <div class="card">
+                <div class="section-header">
+                    <h2>📝 Recent Journal Entries</h2><a href="#">View All →</a>
+                </div>
+                {% for entry in [
+                {"date": patient.last_date, "time":"9:30 PM","mood":"😔","score":4,"text":"Feeling overwhelmed with
+                work. Had a rough day managing stress and expectations...","sentiment":"Negative","keywords":"work,
+                stress, overwhelm"},
+                {"date": patient.last_date, "time":"7:15 AM","mood":"🙂","score":7,"text":"Went for a morning walk.
+                Feeling slightly better than yesterday...","sentiment":"Positive","keywords":"exercise, hope, better"}
+                ] %}
+                <div
+                    style="border-left:3px solid {% if entry.score < 5 %}var(--red){% elif entry.score < 7 %}var(--yellow){% else %}var(--green){% endif %};padding:12px 14px;border-radius:0 8px 8px 0;background:var(--bg);margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                        <span style="font-size:12px;color:var(--text-sm);">{{ entry.date }} · {{ entry.time }}</span>
+                        <span style="font-size:14px;">{{ entry.mood }} <strong>{{ entry.score }}/10</strong></span>
+                    </div>
+                    <div style="font-size:13px;color:var(--text);">"{{ entry.text }}"</div>
+                    <div style="font-size:11px;color:var(--text-sm);margin-top:6px;">Sentiment: {{ entry.sentiment }}
+                        &nbsp;·&nbsp; Keywords: <em>{{ entry.keywords }}</em></div>
+                    <div style="margin-top:8px;display:flex;gap:6px;">
+                        <button class="btn btn-outline btn-sm">View Full Entry</button>
+                        <button class="btn btn-outline btn-sm">+ Therapist Note</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    </div>
+    </div>
+
+    <script>
+        const trendData = {{ trend | tojson }};
+        const last30 = trendData.slice(-30);
+        new Chart(document.getElementById('trendChart'), {
+            type: 'line',
+            data: {
+                labels: last30.map(t => t.date.slice(5)),
+                datasets: [{
+                    label: 'Mood Score',
+                    data: last30.map(t => t.score),
+                    borderColor: '#6B9BD1',
+                    backgroundColor: 'rgba(107,155,209,.1)',
+                    tension: .4, fill: true,
+                    pointRadius: 3, pointBackgroundColor: '#6B9BD1'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { min: 0, max: 10, grid: { color: '#f0f0f0' }, ticks: { stepSize: 2 } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

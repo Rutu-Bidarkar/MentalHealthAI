@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Dashboard | MindfulCare Consultant Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='consultant/css/portal.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    {% include 'consultant/_sidebar.html' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1>Good Evening, Dr. Priya! 🌙</h1>
+                <div class="subtitle">⏰ Next session: 5:00 PM with Rahul Mehta &nbsp;·&nbsp;
+                    <a href="{{ url_for('consultant.schedule') }}"
+                        style="color:var(--blue);font-weight:600;text-decoration:none;">View Details</a>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button class="btn btn-outline btn-sm">🔔 Notifications</button>
+                <div class="avatar-circle">PS</div>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- Stats -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="icon-bubble bubble-blue">👥</div>
+                    <div class="stat-num">{{ stats.total_users }}</div>
+                    <div class="stat-label">Total Patients</div>
+                    <div class="stat-trend">+3 this month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-bubble bubble-green">📓</div>
+                    <div class="stat-num">{{ stats.total_journals }}</div>
+                    <div class="stat-label">Journal Entries</div>
+                    <div class="stat-trend">↑ Active users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-bubble bubble-yellow">😊</div>
+                    <div class="stat-num">{{ stats.avg_mood }}</div>
+                    <div class="stat-label">Avg Mood Score</div>
+                    <div class="stat-trend {% if stats.avg_mood < 6 %}negative{% endif %}">
+                        {% if stats.avg_mood < 6 %}⚠️ Below threshold{% else %}✓ Healthy range{% endif %} </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-bubble bubble-red">📋</div>
+                        <div class="stat-num">{{ stats.total_tests }}</div>
+                        <div class="stat-label">Tests Completed</div>
+                        <div class="stat-trend">PHQ, GAD, Stress</div>
+                    </div>
+                </div>
+
+                <!-- 2-col layout -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+
+                    <!-- Trend chart -->
+                    <div class="card">
+                        <div class="section-header">
+                            <h2>📈 Emotional Well-being Trend</h2>
+                            <select class="btn btn-outline btn-sm" style="cursor:pointer;">
+                                <option>Last 30 Days</option>
+                                <option>Weekly</option>
+                                <option>Monthly</option>
+                            </select>
+                        </div>
+                        <div class="chart-container"><canvas id="trendChart"></canvas></div>
+                    </div>
+
+                    <!-- Mood distribution -->
+                    <div class="card">
+                        <div class="section-header">
+                            <h2>🎭 Mood Distribution</h2>
+                        </div>
+                        <div class="chart-container"><canvas id="moodChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Activity + Schedule -->
+                <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:24px;margin-bottom:24px;">
+
+                    <!-- Activity breakdown -->
+                    <div class="card">
+                        <div class="section-header">
+                            <h2>📊 Activity Breakdown</h2>
+                        </div>
+                        <div class="chart-container"><canvas id="activityChart"></canvas></div>
+                    </div>
+
+                    <!-- Today's schedule -->
+                    <div class="card">
+                        <div class="section-header">
+                            <h2>📅 Today's Schedule</h2>
+                            <a href="{{ url_for('consultant.schedule') }}">View Full Calendar →</a>
+                        </div>
+                        {% for s in [
+                        {"time":"3:00–4:00 PM","status":"completed","name":"Ananya Deshmukh","type":"Initial
+                        Consultation","note":"Patient reported improved sleep patterns"},
+                        {"time":"5:00–6:00 PM","status":"upcoming","name":"Rahul Mehta","type":"Follow-up
+                        Session","note":"Last session 2 days ago · PHQ-9: 12"},
+                        {"time":"6:30–7:30 PM","status":"available","name":"Open Slot","type":"Available for
+                        booking","note":""}
+                        ] %}
+                        <div
+                            style="border-left:4px solid {% if s.status=='completed' %}#aaa{% elif s.status=='upcoming' %}var(--green){% else %}var(--blue){% endif %};padding:14px 16px;border-radius:0 8px 8px 0;background:var(--bg);margin-bottom:10px;">
+                            <div
+                                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                <span style="font-size:13px;color:var(--text-sm);">{{ s.time }}</span>
+                                <span
+                                    class="badge {% if s.status=='completed' %}badge-gray{% elif s.status=='upcoming' %}badge-green{% else %}badge-blue{% endif %}">
+                                    {% if s.status=='completed' %}✓ Completed{% elif s.status=='upcoming' %}● Upcoming{%
+                                    else %}💚 Available{% endif %}
+                                </span>
+                            </div>
+                            <div style="font-weight:700;font-size:15px;">{{ s.name }}</div>
+                            <div style="font-size:12px;color:var(--text-sm);margin-top:2px;">{{ s.type }}</div>
+                            {% if s.note %}<div
+                                style="font-size:12px;color:var(--text-sm);margin-top:6px;font-style:italic;">"{{ s.note
+                                }}"</div>{% endif %}
+                            <div style="margin-top:10px;display:flex;gap:8px;">
+                                {% if s.status=='upcoming' %}
+                                <button class="btn btn-primary btn-sm">▶ Start Session</button>
+                                <a href="{{ url_for('consultant.patients') }}" class="btn btn-outline btn-sm">View
+                                    Profile</a>
+                                {% elif s.status=='available' %}
+                                <button class="btn btn-outline btn-sm">🚫 Block Time</button>
+                                <button class="btn btn-outline btn-sm">🔁 Set Recurring</button>
+                                {% else %}
+                                <button class="btn btn-outline btn-sm">📝 View Notes</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Recent patients -->
+                <div class="card">
+                    <div class="section-header">
+                        <h2>👥 Recent Patients</h2>
+                        <a href="{{ url_for('consultant.patients') }}">View All →</a>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+                        {% for p in patients %}
+                        <div style="background:var(--bg);border-radius:var(--radius-sm);padding:16px;position:relative;cursor:pointer;"
+                            onclick="window.location='{{ url_for('consultant.patient_detail', uid=p.id) }}'">
+                            <div style="position:absolute;top:12px;right:12px;">
+                                <div class="risk-dot {{ p.risk }}"></div>
+                            </div>
+                            <div class="avatar-circle"
+                                style="width:44px;height:44px;font-size:16px;margin-bottom:10px;">
+                                {{ p.name[:2].upper() }}
+                            </div>
+                            <div style="font-weight:700;font-size:15px;padding-right:18px;">{{ p.name }}</div>
+                            <div style="font-size:12px;color:var(--text-sm);">{{ p.age }}, {{ p.gender }} · {{
+                                p.location }}</div>
+                            <div style="font-size:12px;margin-top:8px;">Last: {{ p.last_date }}</div>
+                            <div style="margin-top:8px;">
+                                <span
+                                    class="badge {% if p.risk=='high' %}badge-red{% elif p.risk=='medium' %}badge-yellow{% else %}badge-green{% endif %}">
+                                    Dep: {{ p.avg_depression }}
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:6px;margin-top:12px;">
+                                <a href="{{ url_for('consultant.patient_detail', uid=p.id) }}"
+                                    class="btn btn-primary btn-sm">View</a>
+                                <button class="btn btn-outline btn-sm">💬</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div><!-- .content -->
+        </div><!-- .main -->
+
+        <script>
+            const trend = {{ stats.trend | tojson }};
+            const moodDist = {{ stats.mood_dist | tojson }};
+            const actDist = {{ stats.activity_dist | tojson }};
+
+            // Trend chart
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: trend.map(t => t.date.slice(5)),
+                    datasets: [{
+                        label: 'Avg Mood',
+                        data: trend.map(t => t.score),
+                        borderColor: '#6B9BD1', backgroundColor: 'rgba(107,155,209,.1)',
+                        tension: .4, fill: true, pointRadius: 3, pointBackgroundColor: '#6B9BD1'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { y: { min: 0, max: 10, grid: { color: '#f0f0f0' }, ticks: { stepSize: 2 } }, x: { grid: { display: false } } },
+                    plugins: { annotation: { annotations: { line1: { type: 'line', yMin: 6, yMax: 6, borderColor: 'rgba(231,76,60,.4)', borderWidth: 2, borderDash: [5, 5] } } } }
+                }
+            });
+
+            // Mood donut
+            const mkeys = Object.keys(moodDist);
+            const mvals = mkeys.map(k => moodDist[k]);
+            const mcolors = ['#F4C96F', '#6B9BD1', '#E89E98', '#7FC29B', '#b39ddb', '#ffcc80', '#bcaaa4'];
+            new Chart(document.getElementById('moodChart'), {
+                type: 'doughnut',
+                data: { labels: mkeys, datasets: [{ data: mvals, backgroundColor: mcolors, borderWidth: 2, borderColor: '#fff' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 12 } } } } }
+            });
+
+            // Activity donut
+            const akeys = Object.keys(actDist);
+            const avals = akeys.map(k => actDist[k]);
+            new Chart(document.getElementById('activityChart'), {
+                type: 'doughnut',
+                data: { labels: akeys, datasets: [{ data: avals, backgroundColor: mcolors, borderWidth: 2, borderColor: '#fff' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 12 } } } } }
+            });
+        </script>
+</body>
+
+</html>
