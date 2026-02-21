@@ -9,10 +9,11 @@ class GamesApiService {
   // FOR ANDROID EMULATOR:
   // static const String baseUrl = 'http://10.0.2.2:5000';
 
+  // Updated to handle null token safely
   static Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${TestApiService.token}',
-      };
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ${TestApiService.token ?? ""}',
+  };
 
   /// MEMORY LANE SUBMIT
   static Future<Map<String, dynamic>> submitMemoryLane({
@@ -23,13 +24,14 @@ class GamesApiService {
       final uri = Uri.parse('$baseUrl/memorylane/submit');
       print('🧠 POST MemoryLane: $uri');
 
+      // Use a local map to avoid null-aware marker warnings
+      final Map<String, dynamic> bodyData = {'answers': answers};
+      if (duration != null) bodyData['duration'] = duration;
+
       final response = await http.post(
         uri,
         headers: _headers,
-        body: json.encode({
-          'answers': answers,
-          if (duration != null) 'duration': duration,
-        }),
+        body: json.encode(bodyData),
       );
 
       print('🧠 Response: ${response.statusCode}');
@@ -57,15 +59,18 @@ class GamesApiService {
       final uri = Uri.parse('$baseUrl/popslash/submit');
       print('🎯 POST PopSlash: $uri');
 
+      // Use a local map to avoid null-aware marker warnings
+      final Map<String, dynamic> bodyData = {
+        'score': score,
+        'level': level,
+        'mistakes': mistakes,
+      };
+      if (duration != null) bodyData['duration'] = duration;
+
       final response = await http.post(
         uri,
         headers: _headers,
-        body: json.encode({
-          'score': score,
-          'level': level,
-          'mistakes': mistakes,
-          if (duration != null) 'duration': duration,
-        }),
+        body: json.encode(bodyData),
       );
 
       print('🎯 Response: ${response.statusCode}');

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:provider/provider.dart';
 import 'test_results_provider.dart';
 import 'dynamictest.dart';
@@ -41,7 +42,7 @@ class TestItem {
 }
 
 class TestsPage extends StatelessWidget {
-  TestsPage({Key? key}) : super(key: key);
+  const TestsPage({super.key});
 
   final List<TestItem> tests = const [
     TestItem(
@@ -113,7 +114,7 @@ class TestsPage extends StatelessWidget {
                           padding: const EdgeInsets.only(bottom: 12),
                           child: _buildTestCard(context, test, completed),
                         );
-                      }).toList(),
+                      }),
                       const SizedBox(height: 16),
                       _buildAdditionalAssessment(context),
                     ],
@@ -147,7 +148,10 @@ class TestsPage extends StatelessWidget {
               ),
               Text(
                 'Help us understand you better',
-                style: TextStyle(fontSize: 12, color: AssessmentColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AssessmentColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -169,7 +173,11 @@ class TestsPage extends StatelessWidget {
         children: [
           const Text(
             'Complete Basic Assessment',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 4),
           const Text(
@@ -180,8 +188,18 @@ class TestsPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Progress', style: TextStyle(color: Colors.white, fontSize: 12)),
-              Text('$completedCount/$totalTests completed', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+              const Text(
+                'Progress',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+              Text(
+                '$completedCount/$totalTests completed',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -205,32 +223,55 @@ class TestsPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: AssessmentColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: completed ? AssessmentColors.success : AssessmentColors.surfaceVariant),
+        border: Border.all(
+          color: completed
+              ? AssessmentColors.success
+              : AssessmentColors.surfaceVariant,
+        ),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: (completed ? AssessmentColors.success : AssessmentColors.primary).withOpacity(0.1),
+              color:
+                  (completed
+                          ? AssessmentColors.success
+                          : AssessmentColors.primary)
+                      .withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Text(completed ? '✓' : test.icon, style: const TextStyle(fontSize: 20)),
+            child: Text(
+              completed ? '✓' : test.icon,
+              style: const TextStyle(fontSize: 20),
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(test.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                Text(
+                  test.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     const Icon(Icons.access_time, size: 14, color: Colors.grey),
                     const SizedBox(width: 4),
-                    Text(test.duration, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text(
+                      test.duration,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
                     const SizedBox(width: 12),
-                    Text('${test.questions} questions', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text(
+                      '${test.questions} questions',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
                   ],
                 ),
                 if (!completed) ...[
@@ -241,22 +282,35 @@ class TestsPage extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => DynamicTestPage(testId: test.id)),
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DynamicTestPage(testId: test.id),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AssessmentColors.primary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
-                      child: const Text('Start Test', style: TextStyle(fontSize: 12)),
+                      child: const Text(
+                        'Start Test',
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          if (completed) const Icon(Icons.check_circle, color: AssessmentColors.success, size: 20),
+          if (completed)
+            const Icon(
+              Icons.check_circle,
+              color: AssessmentColors.success,
+              size: 20,
+            ),
         ],
       ),
     );
@@ -278,8 +332,14 @@ class TestsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Additional Assessments', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                Text('Explore more tests to gain deeper insights.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  'Additional Assessments',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                Text(
+                  'Explore more tests to gain deeper insights.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
           ),
@@ -287,7 +347,9 @@ class TestsPage extends StatelessWidget {
             onPressed: () => Navigator.pushNamed(context, '/additional-tests'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AssessmentColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               minimumSize: const Size(0, 32),
             ),

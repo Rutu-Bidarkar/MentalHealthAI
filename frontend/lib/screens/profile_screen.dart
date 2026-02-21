@@ -20,16 +20,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String userName = "";
   String username = "";
   String email = "";
-  String profilePicture = ""; 
+  String profilePicture = "";
   DateTime memberSince = DateTime.now();
-  
+
   // Stats
   int streakDays = 0;
   int totalDays = 0;
   double completionRate = 0.0;
   int badges = 0;
   List<dynamic> assessmentHistory = [];
-  
+
   // Settings
   bool notificationsEnabled = true;
   bool dailyReminders = true;
@@ -37,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool activitySuggestions = true;
   String selectedLanguage = "English";
   String selectedTheme = "Light";
-  
+
   @override
   void initState() {
     super.initState();
@@ -69,7 +69,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           userName = computedName;
           username = "@${uName.isNotEmpty ? uName : 'user'}";
-          email = user['email'] ?? (userName.toLowerCase().replaceAll(" ", ".") + "@mindfulcare.ai");
+          email =
+              user['email'] ??
+              "${userName.toLowerCase().replaceAll(" ", ".")}@mindfulcare.ai";
           if (user['created_at'] != null) {
             memberSince = DateTime.parse(user['created_at']);
             totalDays = DateTime.now().difference(memberSince).inDays + 1;
@@ -83,8 +85,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         setState(() {
           assessmentHistory = history;
-          badges = (history.length > 0 ? 1 : 0) + (totalDays > 7 ? 1 : 0);
-          completionRate = history.isNotEmpty ? 0.5 : 0.0; 
+          badges = (history.isNotEmpty ? 1 : 0) + (totalDays > 7 ? 1 : 0);
+          completionRate = history.isNotEmpty ? 0.5 : 0.0;
         });
       }
     } catch (e) {
@@ -111,18 +113,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await prefs.setBool('daily_reminders', dailyReminders);
     await prefs.setString('language', selectedLanguage);
     await prefs.setString('theme', selectedTheme);
-    
+
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Settings saved!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Settings saved!')));
     }
   }
 
   Future<void> _pickProfilePicture() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
-    
+
     if (image != null) {
       setState(() {
         profilePicture = image.path;
@@ -138,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final user = auth.user;
         String displayHeaderName = "Mindful User";
         String displayHandle = "@user";
-        
+
         if (user != null) {
           final fName = user['first_name']?.toString() ?? "";
           final lName = user['last_name']?.toString() ?? "";
@@ -205,7 +207,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildHeader(String displayHeaderName, String displayHandle) {
-    
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -256,7 +257,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: profilePicture.isEmpty
                           ? Center(
                               child: Text(
-                                displayHeaderName.isNotEmpty ? displayHeaderName[0].toUpperCase() : "U",
+                                displayHeaderName.isNotEmpty
+                                    ? displayHeaderName[0].toUpperCase()
+                                    : "U",
                                 style: const TextStyle(
                                   fontSize: 40,
                                   fontWeight: FontWeight.bold,
@@ -300,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Name
                 Text(
                   displayHeaderName,
@@ -311,7 +314,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                
+
                 // Username
                 Text(
                   displayHandle,
@@ -321,10 +324,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Member since
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F9FC),
                     borderRadius: BorderRadius.circular(12),
@@ -387,7 +393,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatCard(String value, String label, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String value,
+    String label,
+    IconData icon,
+    Color color,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -417,10 +428,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF718096),
-              ),
+              style: const TextStyle(fontSize: 12, color: Color(0xFF718096)),
             ),
           ],
         ),
@@ -428,7 +436,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSection({required String title, required List<Widget> children}) {
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -457,15 +468,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
-          child: Column(
-            children: children,
-          ),
+          child: Column(children: children),
         ),
       ],
     );
   }
 
-  Widget _buildListTile(String title, String subtitle, IconData icon, VoidCallback onTap, {Color? color}) {
+  Widget _buildListTile(
+    String title,
+    String subtitle,
+    IconData icon,
+    VoidCallback onTap, {
+    Color? color,
+  }) {
     return ListTile(
       onTap: onTap,
       leading: Container(
@@ -486,12 +501,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Color(0xFF718096),
-        ),
+        style: const TextStyle(fontSize: 12, color: Color(0xFF718096)),
       ),
-      trailing: const Icon(Icons.chevron_right, size: 18, color: Color(0xFFCBD5E0)),
+      trailing: const Icon(
+        Icons.chevron_right,
+        size: 18,
+        color: Color(0xFFCBD5E0),
+      ),
     );
   }
 
@@ -526,7 +542,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     return ListTile(
                       title: Text(item['test_name'] ?? 'Assessment'),
                       subtitle: Text('Score: ${item['score'] ?? 'N/A'}'),
-                      trailing: Text(_formatDate(DateTime.parse(item['created_at']))),
+                      trailing: Text(
+                        _formatDate(DateTime.parse(item['created_at'])),
+                      ),
                     );
                   },
                 ),
@@ -633,7 +651,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showEditProfileDialog() {
     final nameController = TextEditingController(text: userName);
-    final usernameController = TextEditingController(text: username.replaceAll("@", ""));
+    final usernameController = TextEditingController(
+      text: username.replaceAll("@", ""),
+    );
     final emailController = TextEditingController(text: email);
 
     showDialog(
@@ -680,22 +700,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showLanguageSelector() {
-    final languages = ['English', 'Hindi', 'Marathi', 'Gujarati', 'Tamil', 'Telugu'];
+    final languages = [
+      'English',
+      'Hindi',
+      'Marathi',
+      'Gujarati',
+      'Tamil',
+      'Telugu',
+    ];
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Language'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: languages.map((lang) => ListTile(
-            title: Text(lang),
-            onTap: () {
-              setState(() => selectedLanguage = lang);
-              _saveUserData();
-              Navigator.pop(context);
-            },
-            trailing: selectedLanguage == lang ? const Icon(Icons.check, color: Color(0xFF6B9BD1)) : null,
-          )).toList(),
+          children: languages
+              .map(
+                (lang) => ListTile(
+                  title: Text(lang),
+                  onTap: () {
+                    setState(() => selectedLanguage = lang);
+                    _saveUserData();
+                    Navigator.pop(context);
+                  },
+                  trailing: selectedLanguage == lang
+                      ? const Icon(Icons.check, color: Color(0xFF6B9BD1))
+                      : null,
+                ),
+              )
+              .toList(),
         ),
       ),
     );
@@ -717,7 +750,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 setState(() => selectedTheme = 'Light');
                 Navigator.pop(context);
               },
-              trailing: !themeService.isDarkMode ? const Icon(Icons.check, color: Color(0xFF6B9BD1)) : null,
+              trailing: !themeService.isDarkMode
+                  ? const Icon(Icons.check, color: Color(0xFF6B9BD1))
+                  : null,
             ),
             ListTile(
               title: const Text('Dark'),
@@ -726,7 +761,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 setState(() => selectedTheme = 'Dark');
                 Navigator.pop(context);
               },
-              trailing: themeService.isDarkMode ? const Icon(Icons.check, color: Color(0xFF6B9BD1)) : null,
+              trailing: themeService.isDarkMode
+                  ? const Icon(Icons.check, color: Color(0xFF6B9BD1))
+                  : null,
             ),
           ],
         ),
@@ -741,10 +778,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text('Clear Data?'),
         content: const Text('This will delete all your local records.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF4C96F)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF4C96F),
+            ),
             child: const Text('Clear'),
           ),
         ],
@@ -759,10 +801,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text('Delete Account?'),
         content: const Text('Are you sure? This is permanent.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE89E98)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE89E98),
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -777,14 +824,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text('Logout?'),
         content: const Text('Are you sure you want to logout?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
               AuthService.logout();
               Navigator.pop(context);
               Navigator.pushReplacementNamed(context, '/login');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE89E98)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE89E98),
+            ),
             child: const Text('Logout'),
           ),
         ],

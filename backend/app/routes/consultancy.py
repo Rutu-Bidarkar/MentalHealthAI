@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 import requests
-import psycopg2
+# import psycopg2
 import os
 
 consultancy_bp = Blueprint("consultancy", __name__)

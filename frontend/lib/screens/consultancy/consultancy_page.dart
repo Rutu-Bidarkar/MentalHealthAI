@@ -6,39 +6,32 @@ class ConsultancyPage extends StatefulWidget {
   const ConsultancyPage({super.key});
 
   @override
-  State<ConsultancyPage> createState() => _ConsultancyPageState();
+  State createState() => _ConsultancyPageState();
 }
 
-class _ConsultancyPageState extends State<ConsultancyPage> {
+class _ConsultancyPageState extends State {
   final TextEditingController locationController = TextEditingController();
 
-  Future<void> searchPsychologists() async {
+  Future searchPsychologists() async {
     final location = locationController.text.trim();
-
     if (location.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Please enter a location")));
       return;
     }
-
     try {
       final uri = Uri.http('localhost:8000', '/api/psychologists/nearby', {
         'location': location,
       });
-
       final res = await http.get(uri);
-
       if (res.statusCode != 200) {
         throw Exception("Failed to fetch psychologists");
       }
-
       final data = jsonDecode(res.body);
-
       if (data is List && data.isEmpty) {
         throw Exception("No psychologists found");
       }
-
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -66,13 +59,12 @@ class _ConsultancyPageState extends State<ConsultancyPage> {
           ),
 
           /// 🌿 SOFT BEIGE OVERLAY
-          Container(color: const Color(0xFFF6F1E9).withOpacity(0.90)),
+          Container(color: const Color(0xFFF6F1E9).withValues(alpha: 0.90)),
 
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 30),
-
                 const Text(
                   "Find trusted psychologists near you",
                   textAlign: TextAlign.center,
@@ -82,9 +74,7 @@ class _ConsultancyPageState extends State<ConsultancyPage> {
                     color: Color(0xFF3E3A39),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 40),
                   child: Text(
@@ -93,9 +83,7 @@ class _ConsultancyPageState extends State<ConsultancyPage> {
                     style: TextStyle(fontSize: 14.5, color: Color(0xFF6D645C)),
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 22),
                   child: Container(
@@ -105,7 +93,7 @@ class _ConsultancyPageState extends State<ConsultancyPage> {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 14,
                           offset: const Offset(0, 6),
                         ),
@@ -148,9 +136,7 @@ class _ConsultancyPageState extends State<ConsultancyPage> {
                     ),
                   ),
                 ),
-
                 const Spacer(),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Image.asset(
@@ -159,7 +145,6 @@ class _ConsultancyPageState extends State<ConsultancyPage> {
                     fit: BoxFit.contain,
                   ),
                 ),
-
                 const SizedBox(height: 20),
               ],
             ),
@@ -172,7 +157,6 @@ class _ConsultancyPageState extends State<ConsultancyPage> {
 
 class PsychologistListScreen extends StatelessWidget {
   final List psychologists;
-
   const PsychologistListScreen({super.key, required this.psychologists});
 
   @override
@@ -187,8 +171,7 @@ class PsychologistListScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-
-          Container(color: const Color(0xFFF6F1E9).withOpacity(0.92)),
+          Container(color: const Color(0xFFF6F1E9).withValues(alpha: 0.92)),
 
           SafeArea(
             child: Column(
@@ -234,16 +217,15 @@ class PsychologistListScreen extends StatelessWidget {
                           itemCount: psychologists.length,
                           itemBuilder: (context, index) {
                             final p = psychologists[index];
-
                             return Container(
                               margin: const EdgeInsets.only(bottom: 14),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 borderRadius: BorderRadius.circular(18),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.06),
+                                    color: Colors.black.withValues(alpha: 0.06),
                                     blurRadius: 12,
                                     offset: const Offset(0, 6),
                                   ),
@@ -264,9 +246,7 @@ class PsychologistListScreen extends StatelessWidget {
                                       color: Color(0xFF8E7C6F),
                                     ),
                                   ),
-
                                   const SizedBox(width: 12),
-
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -291,7 +271,6 @@ class PsychologistListScreen extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-
                                   if (p["rating"] != null)
                                     Row(
                                       children: [

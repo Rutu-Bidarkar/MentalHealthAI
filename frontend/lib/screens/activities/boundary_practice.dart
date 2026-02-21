@@ -16,7 +16,7 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
 
   // Practice State
   int _turnIndex = 0; // Tracks conversation depth
-  List<ChatMessage> _messages = [];
+  final List<ChatMessage> _messages = [];
   bool _showOptions = false;
   ScenarioTree? _activeScenario;
 
@@ -40,10 +40,9 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
       _isSurveyComplete = true;
       _turnIndex = 0;
       _messages.clear();
-      _addMessage(ChatMessage(
-        text: _activeScenario!.nodes[0]!.message,
-        isUser: false,
-      ));
+      _addMessage(
+        ChatMessage(text: _activeScenario!.nodes[0]!.message, isUser: false),
+      );
       _showOptions = true;
     });
   }
@@ -53,51 +52,70 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
     if (situation == "Work/Office") {
       return ScenarioTree(
         nodes: {
-          0: ScenarioNode( // Turn 1
-             message: "Hey, can you finish that report tonight? I know it's late.",
-             options: [
-               Option("Sure, I'll do it.", BoundaryType.passive, 1),
-               Option("I can't tonight, but early tomorrow.", BoundaryType.assertive, 2),
-               Option("No, it's 9 PM!", BoundaryType.aggressive, 3),
-             ]
+          0: ScenarioNode(
+            // Turn 1
+            message:
+                "Hey, can you finish that report tonight? I know it's late.",
+            options: [
+              Option("Sure, I'll do it.", BoundaryType.passive, 1),
+              Option(
+                "I can't tonight, but early tomorrow.",
+                BoundaryType.assertive,
+                2,
+              ),
+              Option("No, it's 9 PM!", BoundaryType.aggressive, 3),
+            ],
           ),
-          1: ScenarioNode( // User picked Passive
-             message: "Thanks! I knew I could count on you. Also, can you check the emails?",
-             options: [
-               Option("Okay...", BoundaryType.passive, 99), // 99 = End
-               Option("I definitely can't do emails too.", BoundaryType.assertive, 99),
-             ]
+          1: ScenarioNode(
+            // User picked Passive
+            message:
+                "Thanks! I knew I could count on you. Also, can you check the emails?",
+            options: [
+              Option("Okay...", BoundaryType.passive, 99), // 99 = End
+              Option(
+                "I definitely can't do emails too.",
+                BoundaryType.assertive,
+                99,
+              ),
+            ],
           ),
-          2: ScenarioNode( // User picked Assertive
-             message: "But I really need it for the 8 AM meeting properly formatted.",
-             options: [
-               Option("Fine, I'll stay up.", BoundaryType.passive, 99),
-               Option("I'll send a draft now, format it tomorrow.", BoundaryType.assertive, 99),
-             ]
+          2: ScenarioNode(
+            // User picked Assertive
+            message:
+                "But I really need it for the 8 AM meeting properly formatted.",
+            options: [
+              Option("Fine, I'll stay up.", BoundaryType.passive, 99),
+              Option(
+                "I'll send a draft now, format it tomorrow.",
+                BoundaryType.assertive,
+                99,
+              ),
+            ],
           ),
-          3: ScenarioNode( // User picked Aggressive
-             message: "Wow, okay. No need to yell. I'll just ask someone else.",
-             options: [
-               Option("Good.", BoundaryType.aggressive, 99),
-               Option("Sorry, I'm just tired.", BoundaryType.assertive, 99),
-             ]
+          3: ScenarioNode(
+            // User picked Aggressive
+            message: "Wow, okay. No need to yell. I'll just ask someone else.",
+            options: [
+              Option("Good.", BoundaryType.aggressive, 99),
+              Option("Sorry, I'm just tired.", BoundaryType.assertive, 99),
+            ],
           ),
           // Add more depth if needed, but 2-3 turns is good for demo
-        }
+        },
       );
     } else {
-       // Placeholder for other scenarios to prevent null errors
-       return ScenarioTree(
+      // Placeholder for other scenarios to prevent null errors
+      return ScenarioTree(
         nodes: {
-           0: ScenarioNode(
-             message: "Default Scenario: Can you help me?",
-             options: [
-                Option("Yes", BoundaryType.passive, 99),
-                Option("No", BoundaryType.assertive, 99),
-             ]
-           )
-        }
-       );
+          0: ScenarioNode(
+            message: "Default Scenario: Can you help me?",
+            options: [
+              Option("Yes", BoundaryType.passive, 99),
+              Option("No", BoundaryType.assertive, 99),
+            ],
+          ),
+        },
+      );
     }
   }
 
@@ -109,49 +127,59 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
 
   void _handleOptionSelected(Option option) async {
     setState(() => _showOptions = false);
-    
+
     // User reply
     _addMessage(ChatMessage(text: option.text, isUser: true));
     await Future.delayed(const Duration(seconds: 1));
 
     // Determine Next Step
     if (option.nextNodeId == 99) {
-       _showFinalReport();
+      _showFinalReport();
     } else {
-       // Continue conversation
-       final nextNode = _activeScenario!.nodes[option.nextNodeId];
-       if (nextNode != null) {
-          _addMessage(ChatMessage(text: nextNode.message, isUser: false));
-          setState(() {
-             _turnIndex = option.nextNodeId; // Or manage by node ID directly
-             // We need to update the OPTIONS to match this new node
-             _showOptions = true;
-          });
-       }
+      // Continue conversation
+      final nextNode = _activeScenario!.nodes[option.nextNodeId];
+      if (nextNode != null) {
+        _addMessage(ChatMessage(text: nextNode.message, isUser: false));
+        setState(() {
+          _turnIndex = option.nextNodeId; // Or manage by node ID directly
+          // We need to update the OPTIONS to match this new node
+          _showOptions = true;
+        });
+      }
     }
   }
-  
+
   void _showFinalReport() {
-    _addMessage(ChatMessage(
-      text: "Interaction Complete.",
-      isUser: false, 
-      isSystem: true
-    ));
-    
+    _addMessage(
+      ChatMessage(text: "Interaction Complete.", isUser: false, isSystem: true),
+    );
+
     setState(() {
-       _messages.add(ChatMessage(
+      _messages.add(
+        ChatMessage(
           text: "View Feedback Report",
           isUser: false,
           isSystem: true,
           isAction: true,
           onAction: () {
-             showDialog(context: context, builder: (ctx) => AlertDialog(
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
                 title: const Text("Feedback Report"),
-                content: const Text("You navigated the scenario well! \n\nGoal: Assertiveness. \nResult: You maintained your boundaries in 2/3 turns."),
-                actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Done"))],
-             ));
-          }
-       ));
+                content: const Text(
+                  "You navigated the scenario well! \n\nGoal: Assertiveness. \nResult: You maintained your boundaries in 2/3 turns.",
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text("Done"),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
     });
   }
 
@@ -186,43 +214,65 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
         children: [
           Text(
             "What do you want to work on?",
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
-          ..._goals.map((goal) => _buildRadioOption(
-            goal, 
-            _selectedGoal == goal, 
-            () => setState(() => _selectedGoal = goal)
-          )),
-          
+          ..._goals.map(
+            (goal) => _buildRadioOption(
+              goal,
+              _selectedGoal == goal,
+              () => setState(() => _selectedGoal = goal),
+            ),
+          ),
+
           const SizedBox(height: 32),
           Text(
             "Choose a situation:",
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
-            children: _situations.map((sit) => ChoiceChip(
-              label: Text(sit),
-              selected: _selectedSituation == sit,
-              onSelected: (selected) => setState(() => _selectedSituation = sit),
-              selectedColor: const Color(0xFF6B9BD1),
-              labelStyle: TextStyle(color: _selectedSituation == sit ? Colors.white : Colors.black),
-            )).toList(),
+            children: _situations
+                .map(
+                  (sit) => ChoiceChip(
+                    label: Text(sit),
+                    selected: _selectedSituation == sit,
+                    onSelected: (selected) =>
+                        setState(() => _selectedSituation = sit),
+                    selectedColor: const Color(0xFF6B9BD1),
+                    labelStyle: TextStyle(
+                      color: _selectedSituation == sit
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
+                )
+                .toList(),
           ),
 
           const Spacer(),
           ElevatedButton(
-            onPressed: (_selectedGoal != null && _selectedSituation != null) 
-              ? _startPractice 
-              : null,
+            onPressed: (_selectedGoal != null && _selectedSituation != null)
+                ? _startPractice
+                : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6B9BD1),
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text("Start Practice", style: TextStyle(color: Colors.white, fontSize: 16)),
+            child: const Text(
+              "Start Practice",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
           ),
         ],
       ),
@@ -236,8 +286,12 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF6B9BD1).withOpacity(0.1) : Colors.white,
-          border: Border.all(color: selected ? const Color(0xFF6B9BD1) : Colors.grey.shade300),
+          color: selected
+              ? const Color(0xFF6B9BD1).withOpacity(0.1)
+              : Colors.white,
+          border: Border.all(
+            color: selected ? const Color(0xFF6B9BD1) : Colors.grey.shade300,
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -255,17 +309,19 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
   }
 
   Widget _buildChatInterface() {
-     // Identify current node options
-     // If turnIndex matches a node in _activeScenario, show those options
-     List<Option> currentOptions = [];
-     if (_showOptions && _activeScenario != null && _activeScenario!.nodes.containsKey(_turnIndex)) {
+    // Identify current node options
+    // If turnIndex matches a node in _activeScenario, show those options
+    List<Option> currentOptions = [];
+    if (_showOptions &&
+        _activeScenario != null &&
+        _activeScenario!.nodes.containsKey(_turnIndex)) {
+      currentOptions = _activeScenario!.nodes[_turnIndex]!.options;
+    } else if (_showOptions && _turnIndex != 0) {
+      // Fallback for sub-nodes if logic gets complex, using turnIndex as NodeID
+      if (_activeScenario!.nodes.containsKey(_turnIndex)) {
         currentOptions = _activeScenario!.nodes[_turnIndex]!.options;
-     } else if (_showOptions && _turnIndex != 0) {
-        // Fallback for sub-nodes if logic gets complex, using turnIndex as NodeID
-        if (_activeScenario!.nodes.containsKey(_turnIndex)) {
-           currentOptions = _activeScenario!.nodes[_turnIndex]!.options;
-        }
-     }
+      }
+    }
 
     return Column(
       children: [
@@ -276,41 +332,67 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
             itemBuilder: (context, index) {
               final msg = _messages[index];
               if (msg.isSystem) {
-                 if (msg.isAction) {
-                    return Center(
-                       child: Padding(
-                         padding: const EdgeInsets.symmetric(vertical: 20),
-                         child: ElevatedButton(
-                           onPressed: msg.onAction,
-                           style: ElevatedButton.styleFrom(
-                             backgroundColor: const Color(0xFF6B9BD1),
-                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                           ),
-                           child: const Text("View Report", style: TextStyle(color: Colors.white)),
-                         ),
-                       ),
-                     );
-                 }
-                 return Text(msg.text, style: GoogleFonts.inter(fontSize: 12, color: Colors.grey));
+                if (msg.isAction) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: ElevatedButton(
+                        onPressed: msg.onAction,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6B9BD1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: const Text(
+                          "View Report",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return Text(
+                  msg.text,
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                );
               }
-              
+
               return Align(
-                alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                alignment: msg.isUser
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  ),
                   decoration: BoxDecoration(
                     color: msg.isUser ? const Color(0xFF6B9BD1) : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
-                      bottomLeft: msg.isUser ? const Radius.circular(16) : const Radius.circular(4),
-                      bottomRight: msg.isUser ? const Radius.circular(4) : const Radius.circular(16),
+                      bottomLeft: msg.isUser
+                          ? const Radius.circular(16)
+                          : const Radius.circular(4),
+                      bottomRight: msg.isUser
+                          ? const Radius.circular(4)
+                          : const Radius.circular(16),
                     ),
-                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                    boxShadow: [
+                      BoxShadow(color: Colors.black12, blurRadius: 4),
+                    ],
                   ),
-                  child: Text(msg.text, style: GoogleFonts.inter(color: msg.isUser ? Colors.white : Colors.black87)),
+                  child: Text(
+                    msg.text,
+                    style: GoogleFonts.inter(
+                      color: msg.isUser ? Colors.white : Colors.black87,
+                    ),
+                  ),
                 ),
               );
             },
@@ -321,7 +403,13 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
               color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -5))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, -5),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -333,10 +421,15 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.all(16),
                       side: const BorderSide(color: Color(0xFFCBD5E0)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       alignment: Alignment.centerLeft,
                     ),
-                    child: Text(option.text, style: GoogleFonts.inter(color: const Color(0xFF2D3748))),
+                    child: Text(
+                      option.text,
+                      style: GoogleFonts.inter(color: const Color(0xFF2D3748)),
+                    ),
                   ),
                 );
               }).toList(),
@@ -356,7 +449,15 @@ class ChatMessage {
   final Color? color;
   final IconData? icon;
 
-  ChatMessage({required this.text, required this.isUser, this.isSystem = false, this.isAction = false, this.onAction, this.color, this.icon});
+  ChatMessage({
+    required this.text,
+    required this.isUser,
+    this.isSystem = false,
+    this.isAction = false,
+    this.onAction,
+    this.color,
+    this.icon,
+  });
 }
 
 // Multi-turn Structure

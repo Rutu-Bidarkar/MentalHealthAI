@@ -5,11 +5,11 @@ import '../widgets/physics_marble_jar.dart';
 import '../constants/app_gradients.dart';
 import '../models/mood_model.dart';
 import '../constants/home_theme.dart';
-import 'activities.dart';
-import 'community.dart';
+// import 'activities.dart';
+// import 'community.dart';
 import 'profile_screen.dart';
 import 'tests.dart';
-import 'journal.dart'; 
+import 'journal.dart';
 import 'ai_chat_screen.dart';
 
 import 'package:provider/provider.dart';
@@ -47,64 +47,79 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   final List<QuickAccessTab> quickAccessTabs = const [
     QuickAccessTab(
-        icon: Icons.games_outlined,
-        label: "Games",
-        imagePath: 'assets/images/Games.png', // Capitalized G
-        path: "/games",
-        gradient: AppGradients.games),
+      icon: Icons.games_outlined,
+      label: "Games",
+      imagePath: 'assets/images/Games.png', // Capitalized G
+      path: "/games",
+      gradient: AppGradients.games,
+    ),
     QuickAccessTab(
-        icon: Icons.local_activity_outlined,
-        label: "Activities",
-        imagePath: 'assets/images/Activities.png',
-        path: "/activities",
-        gradient: AppGradients.activities),
+      icon: Icons.local_activity_outlined,
+      label: "Activities",
+      imagePath: 'assets/images/Activities.png',
+      path: "/activities",
+      gradient: AppGradients.activities,
+    ),
     QuickAccessTab(
-        icon: Icons.people_outline,
-        label: "Community",
-        imagePath: 'assets/images/Community lp.png',
-        path: "/community",
-        gradient: AppGradients.community),
+      icon: Icons.people_outline,
+      label: "Community",
+      imagePath: 'assets/images/Community lp.png',
+      path: "/community",
+      gradient: AppGradients.community,
+    ),
     QuickAccessTab(
-        icon: Icons.dashboard_outlined,
-        label: "Dashboard",
-        imagePath: 'assets/images/Reports.png',
-        path: "/reports", // Changed from /profile
-        gradient: AppGradients.reports),
+      icon: Icons.dashboard_outlined,
+      label: "Dashboard",
+      imagePath: 'assets/images/Reports.png',
+      path: "/reports", // Changed from /profile
+      gradient: AppGradients.reports,
+    ),
     QuickAccessTab(
-        icon: Icons.book_outlined,
-        label: "Journal",
-        imagePath: 'assets/images/Journal.png',
-        path: "/journal",
-        gradient: AppGradients.journal),
+      icon: Icons.book_outlined,
+      label: "Journal",
+      imagePath: 'assets/images/Journal.png',
+      path: "/journal",
+      gradient: AppGradients.journal,
+    ),
     QuickAccessTab(
-        icon: Icons.medical_services_outlined,
-        label: "Consult",
-        imagePath: 'assets/images/consult.png', // Lowercase c
-        path: "/consult",
-        gradient: AppGradients.consult),
+      icon: Icons.medical_services_outlined,
+      label: "Consult",
+      imagePath: 'assets/images/consult.png', // Lowercase c
+      path: "/consult",
+      gradient: AppGradients.consult,
+    ),
   ];
 
   List<MarbleData> collectedMarbles = [];
   bool showAssessmentBanner = true;
+  // ✅ Fixed
   String get userName {
     final user = AuthService.currentUser;
     if (user == null) return "User";
-    
+
     // 1. Try first name (Individual)
     final firstName = user['first_name'];
-    if (firstName != null && firstName.toString().trim().isNotEmpty) return firstName.toString().trim();
-    
+    if (firstName != null && firstName.toString().trim().isNotEmpty) {
+      return firstName.toString().trim();
+    }
+
     // 2. Try organization/family name (Admin)
     final orgName = user['organization_name'];
-    if (orgName != null && orgName.toString().trim().isNotEmpty) return orgName.toString().trim();
-    
+    if (orgName != null && orgName.toString().trim().isNotEmpty) {
+      return orgName.toString().trim();
+    }
+
     final famName = user['family_name'];
-    if (famName != null && famName.toString().trim().isNotEmpty) return famName.toString().trim();
-    
+    if (famName != null && famName.toString().trim().isNotEmpty) {
+      return famName.toString().trim();
+    }
+
     // 3. Try username (Fallback)
     final username = user['username'];
-    if (username != null && username.toString().trim().isNotEmpty) return username.toString().trim();
-    
+    if (username != null && username.toString().trim().isNotEmpty) {
+      return username.toString().trim();
+    }
+
     return "User";
   }
 
@@ -120,37 +135,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   List<QuickAccessTab> _getDynamicTabs() {
     final user = AuthService.currentUser;
-    final userType = (user?['account_type'] ?? 'individual').toString().toLowerCase();
+    final userType = (user?['account_type'] ?? 'individual')
+        .toString()
+        .toLowerCase();
     final orgToken = user?['organization_token']?.toString() ?? "";
     final hasGroup = orgToken.isNotEmpty && orgToken != "null";
 
     List<QuickAccessTab> tabs = List.from(quickAccessTabs);
-    
+
     // Add "My Group" for individuals who have joined one
     if (userType == 'individual' && hasGroup) {
-      tabs.insert(tabs.length - 1, const QuickAccessTab(
-        icon: Icons.groups_outlined,
-        label: "My Group",
-        imagePath: 'assets/images/Community lp.png',
-        path: "/my-group",
-        gradient: AppGradients.community,
-      ));
+      tabs.insert(
+        tabs.length - 1,
+        const QuickAccessTab(
+          icon: Icons.groups_outlined,
+          label: "My Group",
+          imagePath: 'assets/images/Community lp.png',
+          path: "/my-group",
+          gradient: AppGradients.community,
+        ),
+      );
     }
-    
+
     // Add "Group Report" for admins
     if (userType == 'family' || userType == 'organization') {
-      tabs.insert(tabs.length - 1, const QuickAccessTab(
-        icon: Icons.bar_chart_outlined,
-        label: "Reports",
-        imagePath: 'assets/images/Reports.png',
-        path: "/group-report",
-        gradient: AppGradients.reports,
-      ));
+      tabs.insert(
+        tabs.length - 1,
+        const QuickAccessTab(
+          icon: Icons.bar_chart_outlined,
+          label: "Reports",
+          imagePath: 'assets/images/Reports.png',
+          path: "/group-report",
+          gradient: AppGradients.reports,
+        ),
+      );
     }
-    
+
     return tabs;
   }
-  
+
   static const int maxMarbles = 50;
 
   @override
@@ -182,20 +205,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<MarbleData> _generatePastMarbles() {
     final marbles = <MarbleData>[];
     final today = DateTime.now();
-    final random = math.Random(); 
+    final random = math.Random();
     final moods = Mood.all;
 
     for (int i = 0; i < 15; i++) {
       final randomMood = moods[random.nextInt(moods.length)];
       final date = today.subtract(Duration(days: i));
 
-      marbles.add(MarbleData(
-        id: 'past-$i',
-        mood: randomMood,
-        date: date,
-        x: 0,
-        y: 0,
-      ));
+      marbles.add(
+        MarbleData(id: 'past-$i', mood: randomMood, date: date, x: 0, y: 0),
+      );
     }
     return marbles;
   }
@@ -212,13 +231,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Enter the invite token provided by your family or organization admin:"),
+            const Text(
+              "Enter the invite token provided by your family or organization admin:",
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: tokenController,
               decoration: InputDecoration(
                 hintText: "Enter Group Token",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 prefixIcon: const Icon(Icons.vpn_key),
               ),
             ),
@@ -238,25 +261,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const Center(child: CircularProgressIndicator()),
+                builder: (context) =>
+                    const Center(child: CircularProgressIndicator()),
               );
 
               final result = await AuthService.joinGroup(token);
-              
+
               if (mounted) {
                 // Pop loading
                 Navigator.pop(context);
-                
+
                 if (result.containsKey('error')) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(result['error']), backgroundColor: Colors.red),
+                    SnackBar(
+                      content: Text(result['error']),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 } else {
                   // Success
                   Navigator.pop(context); // Pop dialog
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(result['message'] ?? "Successfully joined group!"),
+                      content: Text(
+                        result['message'] ?? "Successfully joined group!",
+                      ),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -268,7 +297,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: const Text("Join"),
           ),
@@ -310,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
 
     try {
-      final response = await MoodService.saveMood(moodLabel: mood.label, reason: reason);
+      await MoodService.saveMood(moodLabel: mood.label, reason: reason);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -326,7 +357,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Failed to save mood to database. It will only stay in your jar for this session."),
+            content: Text(
+              "Failed to save mood to database. It will only stay in your jar for this session.",
+            ),
             backgroundColor: Colors.red.withOpacity(0.8),
             duration: const Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
@@ -334,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         );
       }
     }
-    
+
     if (collectedMarbles.length >= maxMarbles) {
       Future.delayed(const Duration(milliseconds: 500), _showJarFullDialog);
     }
@@ -381,9 +414,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       "Every small victory counts. Celebrate your good mood!",
       "Your resilience is inspiring. Stay wonderful!",
       "May your day be as bright as your smile!",
-      "You've got this! Keep that positive energy flowing."
+      "You've got this! Keep that positive energy flowing.",
     ];
-    
+
     final quote = quotes[random.nextInt(quotes.length)];
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -397,11 +430,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _showJarFullDialog() {
-      showDialog(
+    showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Jar Full!'),
-        content: const Text('Your mood jar has reached 50 marbles. It will be cleared to make space for new memories.'),
+        content: const Text(
+          'Your mood jar has reached 50 marbles. It will be cleared to make space for new memories.',
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -438,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final List<Widget> pages = [
       _buildHomeContent(context), // Pass context
       TestsPage(),
-      const JournalPage(), 
+      const JournalPage(),
       const ProfileScreen(),
     ];
 
@@ -451,17 +486,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         key: _scaffoldKey,
         drawer: _buildDrawer(context),
         body: pages[_selectedIndex],
-        floatingActionButton: _selectedIndex == 0 
+        floatingActionButton: _selectedIndex == 0
             ? FloatingActionButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AiChatScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const AiChatScreen(),
+                    ),
                   );
                 },
                 backgroundColor: theme.colorScheme.primary,
-                child: const Icon(Icons.smart_toy, color: Colors.white),
                 tooltip: "AI Assistant",
+                child: const Icon(Icons.smart_toy, color: Colors.white),
               )
             : null,
         bottomNavigationBar: BottomNavigationBar(
@@ -469,7 +506,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           onTap: (index) => setState(() => _selectedIndex = index),
           type: BottomNavigationBarType.fixed,
           selectedItemColor: theme.colorScheme.primary,
-          unselectedItemColor: isDark ? Colors.grey[400] : HomeColors.textSecondary,
+          unselectedItemColor: isDark
+              ? Colors.grey[400]
+              : HomeColors.textSecondary,
           backgroundColor: theme.cardColor,
           showUnselectedLabels: true,
           items: const [
@@ -501,8 +540,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildDrawer(BuildContext context) {
     final theme = Theme.of(context);
-    final themeService = Provider.of<ThemeService>(context, listen: false);
-    
+    // final themeService = Provider.of<ThemeService>(context, listen: false);
+
     return Drawer(
       child: Container(
         color: theme.scaffoldBackgroundColor,
@@ -511,18 +550,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             UserAccountsDrawerHeader(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.secondary,
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
-              accountName: Text(userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+              accountName: Text(
+                userName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               accountEmail: Text(userEmail),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
                 child: Text(
                   userName.isNotEmpty ? userName[0].toUpperCase() : "U",
-                  style: TextStyle(fontSize: 24, color: theme.colorScheme.primary),
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
             ),
@@ -531,20 +579,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 padding: EdgeInsets.zero,
                 children: [
                   // Quick Access Items from the list
-                  ..._getDynamicTabs().map((tab) => ListTile(
-                    leading: Icon(tab.icon, color: theme.iconTheme.color),
-                    title: Text(tab.label, style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
-                    onTap: () {
-                      Navigator.pop(context); // Close drawer
-                      Navigator.pushNamed(context, tab.path);
-                    },
-                  )),
+                  ..._getDynamicTabs().map(
+                    (tab) => ListTile(
+                      leading: Icon(tab.icon, color: theme.iconTheme.color),
+                      title: Text(
+                        tab.label,
+                        style: TextStyle(
+                          color: theme.textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context); // Close drawer
+                        Navigator.pushNamed(context, tab.path);
+                      },
+                    ),
+                  ),
                   const Divider(),
                   // Theme Toggle in Drawer
                   Consumer<ThemeService>(
                     builder: (context, service, _) => SwitchListTile(
-                      title: Text("Dark Mode", style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
-                      secondary: Icon(service.isDarkMode ? Icons.dark_mode : Icons.light_mode, color: theme.iconTheme.color),
+                      title: Text(
+                        "Dark Mode",
+                        style: TextStyle(
+                          color: theme.textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                      secondary: Icon(
+                        service.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                        color: theme.iconTheme.color,
+                      ),
                       value: service.isDarkMode,
                       onChanged: (_) => service.toggleTheme(),
                       activeColor: theme.colorScheme.primary,
@@ -552,10 +615,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   ListTile(
                     leading: Icon(Icons.settings, color: theme.iconTheme.color),
-                    title: Text("Settings", style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
+                    title: Text(
+                      "Settings",
+                      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                    ),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/profile'); // Or settings page
+                      Navigator.pushNamed(
+                        context,
+                        '/profile',
+                      ); // Or settings page
                     },
                   ),
                 ],
@@ -573,6 +642,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
+
   Widget _buildHomeContent(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -580,10 +650,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            theme.scaffoldBackgroundColor,
-            theme.cardColor,
-          ],
+          colors: [theme.scaffoldBackgroundColor, theme.cardColor],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -618,7 +685,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         _buildMoodJarSection(context),
                         const SizedBox(height: 24),
                         _buildQuickAccess(context),
-                        const SizedBox(height: 20), 
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -633,12 +700,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    // final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 48, 24, 16),
       decoration: BoxDecoration(
-        color: theme.appBarTheme.backgroundColor?.withAlpha(204) ?? theme.cardColor.withAlpha(204),
+        color:
+            theme.appBarTheme.backgroundColor?.withAlpha(204) ??
+            theme.cardColor.withAlpha(204),
         boxShadow: [HomeTheme.cardShadow],
       ),
       child: Row(
@@ -657,7 +726,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: theme.textTheme.titleLarge?.color ?? theme.colorScheme.onSurface,
+                  color:
+                      theme.textTheme.titleLarge?.color ??
+                      theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -681,15 +752,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   // Direct navigation to Profile Screen
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileScreen(),
+                    ),
                   );
-                }, 
+                },
                 child: CircleAvatar(
                   backgroundColor: theme.colorScheme.primary.withAlpha(50),
                   child: Text(
                     userName.substring(0, 1),
                     style: TextStyle(
-                        color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -712,7 +787,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: Row(
           children: [
-            const Icon(Icons.assignment_late_outlined, color: Colors.white, size: 32),
+            const Icon(
+              Icons.assignment_late_outlined,
+              color: Colors.white,
+              size: 32,
+            ),
             const SizedBox(width: 16),
             const Expanded(
               child: Column(
@@ -720,7 +799,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 children: [
                   Text(
                     "Pending Assessment",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   Text(
                     "Take it now to track your progress!",
@@ -736,13 +819,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-
   Widget _buildGreeting(BuildContext context) {
     final theme = Theme.of(context);
     final user = AuthService.currentUser;
-    final userType = (user?['account_type'] ?? 'individual').toString().toLowerCase();
-    final orgToken = user?['organization_token']?.toString() ?? "";
-    final hasGroup = orgToken.isNotEmpty && orgToken != "null";
+    final userType = (user?['account_type'] ?? 'individual')
+        .toString()
+        .toLowerCase();
+    // final orgToken = user?['organization_token']?.toString() ?? "";
+    // final hasGroup = orgToken.isNotEmpty && orgToken != "null";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -752,13 +836,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: theme.textTheme.bodyLarge?.color ?? theme.colorScheme.onBackground,
+            color:
+                theme.textTheme.bodyLarge?.color ??
+                theme.colorScheme.onBackground,
           ),
         ),
         const SizedBox(height: 8),
         if (showAssessmentBanner) _buildAssessmentBanner(),
         const SizedBox(height: 16),
-        
+
         // Buttons based on user type
         if (userType == 'individual') ...[
           HoverButton(
@@ -804,13 +890,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onReport: _addToReport,
           ),
         ),
-         const SizedBox(height: 16),
-          HoverButton(
-            onPressed: () => Navigator.pushNamed(context, '/tests'),
-           label: "Take a Mental Health Test",
-           icon: Icons.assignment_outlined,
-           gradient: AppGradients.ocean,
-         ),
+        const SizedBox(height: 16),
+        HoverButton(
+          onPressed: () => Navigator.pushNamed(context, '/tests'),
+          label: "Take a Mental Health Test",
+          icon: Icons.assignment_outlined,
+          gradient: AppGradients.ocean,
+        ),
       ],
     );
   }
@@ -849,7 +935,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-
 class HoverButton extends StatefulWidget {
   final VoidCallback onPressed;
   final String label;
@@ -882,41 +967,40 @@ class _HoverButtonState extends State<HoverButton> {
           scale: _isHovered ? 1.05 : 1.0,
           duration: const Duration(milliseconds: 200),
           child: Container(
-             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-             decoration: BoxDecoration(
-               gradient: widget.gradient,
-               borderRadius: BorderRadius.circular(12),
-               boxShadow: [
-                 if (_isHovered)
-                   BoxShadow(
-                     color: Colors.blue.withValues(alpha: 0.3),
-                     blurRadius: 12,
-                     offset: const Offset(0, 4),
-                   ),
-               ],
-             ),
-             child: Row(
-               mainAxisAlignment: MainAxisAlignment.center,
-               children: [
-                 Icon(widget.icon, color: Colors.white),
-                 const SizedBox(width: 8),
-                 Text(
-                   widget.label,
-                   style: const TextStyle(
-                     color: Colors.white,
-                     fontWeight: FontWeight.w600,
-                     fontSize: 16,
-                   ),
-                 ),
-               ],
-             ),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            decoration: BoxDecoration(
+              gradient: widget.gradient,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                if (_isHovered)
+                  BoxShadow(
+                    color: Colors.blue.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(widget.icon, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  widget.label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
 
 class _QuickAccessCard extends StatefulWidget {
   final QuickAccessTab tab;
@@ -932,7 +1016,7 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -946,7 +1030,7 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
               color: theme.cardColor,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                 BoxShadow(
+                BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
@@ -959,15 +1043,18 @@ class _QuickAccessCardState extends State<_QuickAccessCard> {
                 Expanded(
                   child: Container(
                     margin: const EdgeInsets.all(8),
-                    padding: widget.tab.label == "Dashboard" 
+                    padding: widget.tab.label == "Dashboard"
                         ? const EdgeInsets.all(28)
-                        : const EdgeInsets.all(20), 
+                        : const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: widget.tab.gradient,
                     ),
                     child: Center(
-                      child: Image.asset(widget.tab.imagePath, fit: BoxFit.contain), 
+                      child: Image.asset(
+                        widget.tab.imagePath,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),

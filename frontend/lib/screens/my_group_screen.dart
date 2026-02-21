@@ -48,7 +48,7 @@ class _MyGroupScreenState extends State<MyGroupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // final theme = Theme.of(context);
     
     return Scaffold(
       backgroundColor: const Color(0xFFF7F4EB),

@@ -15,7 +15,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  
+
   String? _selectedCategory;
   bool _isAnonymous = false;
   bool _isSubmitting = false;
@@ -61,10 +61,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
       setState(() => _isSubmitting = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('❌ Error: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -154,7 +151,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: DropdownButtonFormField<String>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: const InputDecoration(
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(horizontal: 16),
@@ -172,7 +169,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
                         ),
                         Text(
                           category.description,
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -272,7 +272,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 secondary: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _isAnonymous ? Colors.orange.shade100 : Colors.grey.shade200,
+                    color: _isAnonymous
+                        ? Colors.orange.shade100
+                        : Colors.grey.shade200,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -309,7 +311,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
                       )
                     : const Text(
                         'Create Post',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
               ),
             ),

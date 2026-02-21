@@ -5,11 +5,9 @@ import '../models/community_models.dart';
 class CommunityApiService {
   // FOR CHROME/WEB:
   static const String baseUrl = 'http://127.0.0.1:8000/api/community';
-  
+
   // FOR ANDROID EMULATOR:
   // static const String baseUrl = 'http://10.0.2.2:8000/api/community';
-  
-  // ✅ NO AUTH, NO TOKENS, NO HEADERS!
 
   static Future<List<CommunityPost>> getPosts({
     String? category,
@@ -18,6 +16,7 @@ class CommunityApiService {
     int perPage = 20,
   }) async {
     try {
+      // ✅ Fixed: use if(category != null) instead of passing null value
       final queryParams = {
         if (category != null) 'category': category,
         'sort_by': sortBy,
@@ -25,11 +24,11 @@ class CommunityApiService {
         'per_page': perPage.toString(),
       };
 
-      final uri = Uri.parse('$baseUrl/posts').replace(queryParameters: queryParams);
-      print('🔵 GET Posts: $uri');
-      
+      final uri = Uri.parse(
+        '$baseUrl/posts',
+      ).replace(queryParameters: queryParams);
+
       final response = await http.get(uri);
-      print('🔵 Response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -41,16 +40,13 @@ class CommunityApiService {
         throw Exception('Failed to load posts: ${response.statusCode}');
       }
     } catch (e) {
-      print('🔴 Error: $e');
       throw Exception('Error loading posts: $e');
     }
   }
 
   static Future<CommunityPost> getPost(String postId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/posts/$postId'),
-      );
+      final response = await http.get(Uri.parse('$baseUrl/posts/$postId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -106,6 +102,7 @@ class CommunityApiService {
         body: json.encode({
           'post_id': postId,
           'content': content,
+          // ✅ Fixed: replaced ?'key' with if syntax
           if (parentCommentId != null) 'parent_comment_id': parentCommentId,
           'is_anonymous': isAnonymous,
         }),
@@ -123,7 +120,10 @@ class CommunityApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> votePost(String postId, String voteType) async {
+  static Future<Map<String, dynamic>> votePost(
+    String postId,
+    String voteType,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/posts/$postId/vote'),
@@ -142,7 +142,10 @@ class CommunityApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> voteComment(String commentId, String voteType) async {
+  static Future<Map<String, dynamic>> voteComment(
+    String commentId,
+    String voteType,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/comments/$commentId/vote'),
@@ -163,9 +166,7 @@ class CommunityApiService {
 
   static Future<List<Category>> getCategories() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/categories'),
-      );
+      final response = await http.get(Uri.parse('$baseUrl/categories'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -183,9 +184,7 @@ class CommunityApiService {
 
   static Future<void> deletePost(String postId) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/posts/$postId'),
-      );
+      final response = await http.delete(Uri.parse('$baseUrl/posts/$postId'));
 
       if (response.statusCode != 200) {
         throw Exception('Failed to delete post');
@@ -220,6 +219,7 @@ class CommunityApiService {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'reason': reason,
+          // ✅ Fixed: replaced ?'key' with if syntax
           if (description != null) 'description': description,
         }),
       );
