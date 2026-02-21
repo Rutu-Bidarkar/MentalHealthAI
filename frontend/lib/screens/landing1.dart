@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async'; // Added for Timer
+import 'package:google_fonts/google_fonts.dart'; // Added for fonts
 
 // Theme constants
 class AppTheme {
@@ -77,23 +79,23 @@ class AppEffects {
   const AppEffects();
 
   BoxDecoration get glassCard => BoxDecoration(
-        color: Colors.white.withAlpha(51), // 20% opacity
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(
-          color: Colors.white.withAlpha(77), // 30% opacity
-          width: 1,
-        ),
-        backgroundBlendMode: BlendMode.overlay,
-      );
+    color: Colors.white.withAlpha(51), // 20% opacity
+    borderRadius: BorderRadius.circular(100),
+    border: Border.all(
+      color: Colors.white.withAlpha(77), // 30% opacity
+      width: 1,
+    ),
+    backgroundBlendMode: BlendMode.overlay,
+  );
 
   BoxDecoration get glass => BoxDecoration(
-        color: Colors.white.withAlpha(38), // 15% opacity
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        border: Border.all(
-          color: Colors.white.withAlpha(51), // 20% opacity
-          width: 1,
-        ),
-      );
+    color: Colors.white.withAlpha(38), // 15% opacity
+    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+    border: Border.all(
+      color: Colors.white.withAlpha(51), // 20% opacity
+      width: 1,
+    ),
+  );
 }
 
 // Onboarding slide model
@@ -118,24 +120,51 @@ class Landing1 extends StatefulWidget {
   State<Landing1> createState() => _Landing1State();
 }
 
-class _Landing1State extends State<Landing1>
-    with SingleTickerProviderStateMixin {
-  int currentSlide = 0;
-  late AnimationController _shimmerController;
+class _Landing1State extends State<Landing1> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  Timer? _autoAdvanceTimer;
 
-  // IMPORTANT: Update these paths to match your asset structure
+  // New Gradients as per request
+  static const List<LinearGradient> _gradients = [
+    LinearGradient(
+      // Welcome page
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFF6B9BD1), Color(0xFFA8C5A5)],
+    ),
+    LinearGradient(
+      // Understand yourself better
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFFA5C3A8), Color(0xFFF4A59C)],
+    ),
+    LinearGradient(
+      // Evidence based exercises
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFFECA89D), Color(0xFF6B9BD1)],
+    ),
+    LinearGradient(
+      // You're not alone
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFF719CCF), Color(0xFFB0C8A0)],
+    ),
+  ];
+
   final List<OnboardingSlide> onboardingSlides = const [
     OnboardingSlide(
       title: "Welcome to MindfulCare",
       description: "Your personalized mental health companion",
-      gradient: AppGradients.ocean,
-      imagePath: 'assets/images/Welcome lp.png',
+      gradient: AppGradients.ocean, // Overridden by _gradients[index]
+      imagePath: 'assets/images/Baseline welcome.png', // Fixed path
     ),
     OnboardingSlide(
       title: "Understand Yourself Better",
       description: "Take validated assessments to track your mental health",
       gradient: AppGradients.forest,
-      imagePath: 'assets/images/Understand urself lp.png',
+      imagePath: 'assets/images/Understand urself.png', // Corrected path
     ),
     OnboardingSlide(
       title: "Evidence-Based Exercises",
@@ -154,246 +183,235 @@ class _Landing1State extends State<Landing1>
   @override
   void initState() {
     super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
+    _startAutoAdvance();
+  }
+
+  void _startAutoAdvance() {
+    _autoAdvanceTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      if (_pageController.hasClients &&
+          _currentPage < onboardingSlides.length - 1) {
+        try {
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeInOut,
+          );
+        } catch (e) {
+          debugPrint("Error auto-advancing page: $e");
+          timer.cancel(); // Stop trying if it fails
+        }
+      } else {
+        // Loop back to start instead of stopping
+        _pageController.animateToPage(
+          0,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
-    _shimmerController.dispose();
+    _autoAdvanceTimer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
-
-  void goToNext() {
-    if (currentSlide < onboardingSlides.length - 1) {
-      setState(() {
-        currentSlide++;
-      });
-    } else {
-      Navigator.pushNamed(context, '/signup');
-    }
-  }
-
-  void goToPrev() {
-    if (currentSlide > 0) {
-      setState(() {
-        currentSlide--;
-      });
-    }
-  }
-
-  bool get isLastSlide => currentSlide == onboardingSlides.length - 1;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnimatedContainer(
-        duration: const Duration(milliseconds: 700),
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          gradient: onboardingSlides[currentSlide].gradient,
-        ),
+        duration: const Duration(milliseconds: 800),
+        decoration: BoxDecoration(gradient: _gradients[_currentPage]),
         child: SafeArea(
           child: Column(
             children: [
-              // Main content area with card
               Expanded(
                 child: Stack(
                   children: [
-                    // Subtle overlay pattern
+                    // Dot Pattern
                     Positioned.fill(
                       child: Opacity(
                         opacity: 0.1,
-                        child: CustomPaint(
-                          painter: DotPatternPainter(),
-                        ),
+                        child: CustomPaint(painter: DotPatternPainter()),
                       ),
                     ),
-                    // Content
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Image circle with shimmer
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 128,
-                                  height: 128,
-                                  decoration:
-                                      AppTheme.effects.glassCard.copyWith(
-                                    boxShadow: [AppShadows.glow],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(100),
-                                    child: Stack(
-                                      children: [
-                                        // Shimmer effect
-                                        AnimatedBuilder(
-                                          animation: _shimmerController,
-                                          builder: (context, child) {
-                                            return Positioned(
-                                              left: -128 +
-                                                  (_shimmerController.value *
-                                                      256),
-                                              top: 0,
-                                              bottom: 0,
-                                              child: Container(
-                                                width: 128,
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    begin:
-                                                        Alignment.centerLeft,
-                                                    end: Alignment.centerRight,
-                                                    colors: [
-                                                      Colors.transparent,
-                                                      Colors.white.withAlpha(153), // 60% opacity
-                                                      Colors.transparent,
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+
+                    // PageView
+                    PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() => _currentPage = index);
+                      },
+                      itemCount: onboardingSlides.length,
+                      itemBuilder: (context, index) {
+                        final slide = onboardingSlides[index];
+                        return Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Image with Glass Effect
+                              Container(
+                                width: 200, // Increased size for impact
+                                height: 200,
+                                margin: const EdgeInsets.only(bottom: 40),
+                                padding: const EdgeInsets.all(20),
+                                decoration: AppTheme.effects.glassCard.copyWith(
+                                  boxShadow: [AppShadows.glow],
                                 ),
-                                // Image
-                                Image.asset(
-                                  onboardingSlides[currentSlide].imagePath,
-                                  width: 96,
-                                  height: 96,
+                                child: Image.asset(
+                                  slide.imagePath,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    // Fallback if image not found
-                                    return const Icon(
-                                      Icons.image,
-                                      size: 64,
-                                      color: Colors.white,
-                                    );
-                                  },
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                        Icons.broken_image,
+                                        size: 60,
+                                        color: Colors.white,
+                                      ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 32),
-                            // Title
-                            Text(
-                              onboardingSlides[currentSlide].title,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    color: Color.fromRGBO(0, 0, 0, 0.2),
-                                    blurRadius: 12,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            // Description
-                            Text(
-                              onboardingSlides[currentSlide].description,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white.withAlpha(242), // 95% opacity
-                                height: 1.6,
-                                shadows: const [
-                                  Shadow(
-                                    color: Color.fromRGBO(0, 0, 0, 0.1),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
+
+                              // Title
+                              Text(
+                                slide.title,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  // Changed to Poppins for professional look
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold, // Added bold
+                                  color: Colors.white,
+                                  shadows: [
+                                    const Shadow(
+                                      color: Color.fromRGBO(0, 0, 0, 0.2),
+                                      blurRadius: 12,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
+                              const SizedBox(height: 16),
+                              // Description
+                              Text(
+                                slide.description,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  // Changed to Poppins for consistency
+                                  fontSize: 18,
+                                  color: Colors.white.withAlpha(242),
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
 
-              // Navigation dots
+              // Bottom Navigation
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    onboardingSlides.length,
-                    (index) => GestureDetector(
-                      onTap: () => setState(() => currentSlide = index),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: currentSlide == index ? 24 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          gradient: currentSlide == index
-                              ? AppGradients.primaryGlow
-                              : null,
-                          color: currentSlide == index
-                              ? null
-                              : const Color.fromRGBO(0, 0, 0, 0.15),
-                          boxShadow: currentSlide == index
-                              ? [AppShadows.soft]
-                              : null,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Navigation buttons
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
-                child: Row(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  // Changed to Column to center indicators above buttons
                   children: [
-                    if (currentSlide > 0) ...[
-                      Expanded(
-                        child: _GlassButton(
-                          onPressed: goToPrev,
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.chevron_left, size: 20),
-                              SizedBox(width: 8),
-                              Text('Back'),
-                            ],
+                    // Indicators (Center)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        onboardingSlides.length,
+                        (index) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                          ), // Reduced margin
+                          width: _currentPage == index ? 24 : 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(
+                              _currentPage == index ? 255 : 100,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                    ],
-                    Expanded(
-                      flex: currentSlide > 0 ? 1 : 2,
-                      child: _PrimaryButton(
-                        onPressed: goToNext,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(isLastSlide ? 'Get Started' : 'Continue'),
-                            if (!isLastSlide) ...[
-                              const SizedBox(width: 8),
-                              const Icon(Icons.chevron_right, size: 20),
-                            ],
-                          ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Back Button
+                        if (_currentPage > 0)
+                          GestureDetector(
+                            onTap: () {
+                              _pageController.previousPage(
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF5FC3B0,
+                                ), // Requested Back Color
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [AppShadows.card],
+                              ),
+                              child: const Text(
+                                'Back',
+                                style: TextStyle(
+                                  color: Colors.white, // White font
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          const SizedBox(), // Spacer to keep layout balanced if needed, or just let SpaceBetween handle it
+                        // Next/Get Started Button
+                        GestureDetector(
+                          onTap: () {
+                            // As requested, Continue button now goes to Auth Choice page
+                            Navigator.pushNamed(context, '/auth-choice');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFF6B9BD1,
+                              ), // Requested Continue Color
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [AppShadows.card],
+                            ),
+                            child: const Text(
+                              'Continue',
+                              style: TextStyle(
+                                color: Colors.white, // White font
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -411,7 +429,8 @@ class DotPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withAlpha(38) // 15% opacity
+      ..color = Colors.white
+          .withAlpha(38) // 15% opacity
       ..style = PaintingStyle.fill;
 
     const spacing = 40.0;
@@ -433,10 +452,7 @@ class _GlassButton extends StatefulWidget {
   final VoidCallback onPressed;
   final Widget child;
 
-  const _GlassButton({
-    required this.onPressed,
-    required this.child,
-  });
+  const _GlassButton({required this.onPressed, required this.child});
 
   @override
   State<_GlassButton> createState() => _GlassButtonState();
@@ -482,10 +498,7 @@ class _PrimaryButton extends StatefulWidget {
   final VoidCallback onPressed;
   final Widget child;
 
-  const _PrimaryButton({
-    required this.onPressed,
-    required this.child,
-  });
+  const _PrimaryButton({required this.onPressed, required this.child});
 
   @override
   State<_PrimaryButton> createState() => _PrimaryButtonState();

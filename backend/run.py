@@ -36,3 +36,22 @@ if __name__ == "__main__":
             print("ℹ️ Test user already exists")
 
     app.run(host="0.0.0.0", port=8000, debug=True)
+try:
+    from app import create_app, db
+except ImportError:
+    from backend.app import create_app, db
+
+app = create_app()
+
+# Create tables
+with app.app_context():
+    db.create_all()
+
+if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 8000))
+    app.run(
+        host='0.0.0.0',
+        port=port,
+        debug=False
+    )

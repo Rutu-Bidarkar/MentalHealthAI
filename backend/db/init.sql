@@ -1,7 +1,5 @@
--- Connect to the database
-\c mental_health_app;
+-- PostgreSQL init.sql (clean)
 
--- Create tables
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) PRIMARY KEY,
     account_type VARCHAR(20) NOT NULL CHECK (account_type IN ('individual', 'organization', 'family')),
@@ -25,7 +23,6 @@ CREATE TABLE IF NOT EXISTS users (
     privacy_accepted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
     organization_name VARCHAR(200),
     family_name VARCHAR(200),
     member_count INTEGER DEFAULT 1
@@ -44,29 +41,6 @@ CREATE TABLE IF NOT EXISTS organization_tokens (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_username ON users(username);
-CREATE INDEX idx_org_tokens_token ON organization_tokens(token);
-
--- Insert sample tokens for testing
-INSERT INTO organization_tokens (id, token, account_type, organization_name, max_members, is_active) 
-VALUES 
-    ('org-token-1', 'ORG1234567890', 'organization', 'Test Organization', 50, true),
-    ('family-token-1', 'FAM1234567890', 'family', 'Test Family', 20, true)
-ON CONFLICT (token) DO NOTHING;
-
-CREATE TABLE IF NOT EXISTS consultation_requests (
-    id SERIAL PRIMARY KEY,
-    user_id VARCHAR(36) REFERENCES users(id),
-    psychologist_id INT REFERENCES psychologists(id),
-    message TEXT,
-    preferred_date DATE,
-    status VARCHAR(20) DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- ================= CONSULT REQUESTS (EXTERNAL PSYCHOLOGISTS) =================
 CREATE TABLE IF NOT EXISTS consultation_requests (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR(36) REFERENCES users(id),
@@ -85,5 +59,15 @@ CREATE TABLE IF NOT EXISTS consultation_requests (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_org_tokens_token ON organization_tokens(token);
 CREATE INDEX idx_consult_requests_user ON consultation_requests(user_id);
 CREATE INDEX idx_consult_requests_city ON consultation_requests(city);
+
+INSERT INTO organization_tokens
+(id, token, account_type, organization_name, max_members, is_active)
+VALUES
+('org-token-1', 'ORG1234567890', 'organization', 'Test Organization', 50, true),
+('family-token-1', 'FAM1234567890', 'family', 'Test Family', 20, true)
+ON CONFLICT (token) DO NOTHING;

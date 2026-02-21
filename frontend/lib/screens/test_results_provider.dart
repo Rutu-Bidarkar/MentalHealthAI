@@ -1,6 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:convert';
+import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Model for a single test result
 class TestResult {
@@ -19,39 +21,120 @@ class TestResult {
     required this.color,
     required this.date,
   });
+
+  Map<String, dynamic> toJson() => {
+    'testId': testId,
+    'score': score,
+    'label': label,
+    'msg': msg,
+    'color': color.value,
+    'date': date.toIso8601String(),
+  };
+
+  factory TestResult.fromJson(Map<String, dynamic> json) => TestResult(
+    testId: json['testId'],
+    score: json['score'],
+    label: json['label'],
+    msg: json['msg'],
+    color: Color(json['color']),
+    date: DateTime.parse(json['date']),
+  );
 }
 
 // Manages the state of test results
 class TestResultsProvider with ChangeNotifier {
-  final Map<String, TestResult> _results = {};
+  Map<String, TestResult> _results = {};
+  bool _hasSeenInitialNotice = false;
+  SharedPreferences? _prefs;
+  String? _currentUserId;
 
-  // Mock data for demonstration
+  // ✅ Fix 2: Made final (prefer_final_fields)
+  final Completer<void> _initCompleter = Completer<void>();
+
   TestResultsProvider() {
-    _results['baseline'] = TestResult(
-      testId: 'baseline',
-      score: 18,
-      label: 'Moderate',
-      msg: "You're in an average range.",
-      color: const Color(0xFFF4A59C),
-      date: DateTime.now().subtract(const Duration(days: 2)),
+    _initPrefs();
+  }
+
+  Future<void> _initPrefs() async {
+    _prefs = await SharedPreferences.getInstance();
+    _initCompleter.complete();
+    notifyListeners();
+  }
+
+  Future<void> setCurrentUser(String userId) async {
+    await _initCompleter.future;
+    _currentUserId = userId;
+    _loadResults();
+    _loadNoticeStatus();
+    notifyListeners();
+  }
+
+  void _loadResults() {
+    if (_currentUserId == null || _prefs == null) return;
+
+    final String? resultsJson = _prefs!.getString(
+      'test_results_$_currentUserId',
     );
-    _results['depression'] = TestResult(
-      testId: 'depression',
-      score: 12,
-      label: 'Moderate',
-      msg: "Moderate depression.",
-      color: const Color(0xFFF4A59C),
-      date: DateTime.now().subtract(const Duration(days: 1)),
+    if (resultsJson != null) {
+      final Map<String, dynamic> decoded = json.decode(resultsJson);
+      _results = decoded.map(
+        (key, value) => MapEntry(key, TestResult.fromJson(value)),
+      );
+      _checkAndResetDaily();
+    } else {
+      _results = {};
+    }
+  }
+
+  void _checkAndResetDaily() {
+    if (_results.isEmpty) return;
+
+    final latestDate = _results.values
+        .map((r) => r.date)
+        .reduce((a, b) => a.isAfter(b) ? a : b);
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastTestDay = DateTime(
+      latestDate.year,
+      latestDate.month,
+      latestDate.day,
     );
+
+    if (today.isAfter(lastTestDay)) {
+      _results.clear();
+      _saveResults();
+    }
+  }
+
+  void _loadNoticeStatus() {
+    if (_currentUserId == null || _prefs == null) return;
+    _hasSeenInitialNotice =
+        _prefs!.getBool('has_seen_initial_notice_$_currentUserId') ?? false;
+  }
+
+  bool get hasSeenInitialNotice {
+    if (_currentUserId == null) return true;
+    return _hasSeenInitialNotice;
+  }
+
+  Future<void> markNoticeAsSeen() async {
+    if (_currentUserId == null || _prefs == null) return;
+    _hasSeenInitialNotice = true;
+    await _prefs!.setBool('has_seen_initial_notice_$_currentUserId', true);
+    notifyListeners();
   }
 
   Map<String, TestResult> get results => _results;
+  bool get isInitialized => _prefs != null;
 
   bool isTestCompleted(String testId) {
+    _checkAndResetDaily();
     return _results.containsKey(testId);
   }
 
   int getCompletedCount() {
+    _checkAndResetDaily();
     return _results.length;
   }
 
@@ -60,17 +143,37 @@ class TestResultsProvider with ChangeNotifier {
   }
 
   int getDaysUntilRetake() {
-    if (_results.length < 4) return 30; // Assuming 4 basic tests
+    if (_results.isEmpty) return 0;
 
-    DateTime? latestTestDate =
-        _results.values.map((r) => r.date).reduce((a, b) => a.isAfter(b) ? a : b);
-    final nextRetakeDate = latestTestDate.add(const Duration(days: 30));
-    final difference = nextRetakeDate.difference(DateTime.now()).inDays;
-    return max(0, difference);
+    // ✅ Fix 1: Removed unused 'latestTestDate' variable
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final nextDay = today.add(const Duration(days: 1));
+
+    if (now.isBefore(nextDay)) {
+      final difference = nextDay.difference(now).inHours;
+      return max(0, (difference / 24).ceil());
+    }
+    return 0;
   }
 
   void addTestResult(TestResult result) {
     _results[result.testId] = result;
+    _saveResults();
+    notifyListeners();
+  }
+
+  Future<void> _saveResults() async {
+    if (_currentUserId == null || _prefs == null) return;
+    final String encoded = json.encode(
+      _results.map((key, value) => MapEntry(key, value.toJson())),
+    );
+    await _prefs!.setString('test_results_$_currentUserId', encoded);
+  }
+
+  void clearResults() {
+    _results.clear();
+    _saveResults();
     notifyListeners();
   }
 }

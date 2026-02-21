@@ -1,109 +1,104 @@
 // services/test_api_service.dart
-//
-// API service for psychological tests
-// Supports mock mode + real backend + auth token
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/test_models.dart';
-import 'dart:developer';
+import 'package:flutter/foundation.dart';
+// import '../models/test_models.dart';
+import 'auth_service.dart';
 
 class TestApiService {
-  /// 🔗 Backend base URL (Android Emulator)
-  static const String baseUrl = 'http://10.0.2.2:8000';
-
-  /// Toggle mock vs real backend
-  static const bool useMockData = false;
-
-  /// 🔐 JWT token (set after login)
+  // 1. ADD THIS STATIC FIELD: This fixes the 'undefined_getter' error in GamesApiService
   static String? token;
 
-  /// Common headers with auth
-  static Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    if (token != null) 'Authorization': 'Bearer $token',
-  };
+  static String get baseUrl {
+    if (kIsWeb) {
+      return "http://127.0.0.1:8000";
+    }
+    return "http://10.0.2.2:8000";
+  }
 
-  /// ================= LOGIN =================
-  static Future<bool> login(String email, String password) async {
+  static Future<Map<String, String>> _getHeaders() async {
+    // 2. UPDATE THIS: Fetch the token and save it to the static variable
+    final fetchedToken = await AuthService.getToken();
+    token =
+        fetchedToken; // Store it so other services can access TestApiService.token
+
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+  /// Start a dynamic assessment
+  static Future<Map<String, dynamic>> startAssessment(String testType) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email, 'password': password}),
+        Uri.parse('$baseUrl/api/assessment/start'),
+        headers: await _getHeaders(),
+        body: json.encode({'test_type': testType}),
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        token = data['access_token'];
-        log('✅ Login success');
-        return true;
-      }
-
-      log('❌ Login failed: ${response.statusCode}');
-      return false;
-    } catch (e) {
-      log('❌ Login error: $e');
-      return false;
-    }
-  }
-
-  /// ================= LOAD TEST =================
-  static Future<TestData> loadTest(String testId) async {
-    if (useMockData) {
-      return _loadMockTest(testId);
-    } else {
-      return _loadTestFromAPI(testId);
-    }
-  }
-
-  static Future<TestData> _loadTestFromAPI(String testId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/assessment/$testId'),
-        headers: _headers,
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return TestData.fromJson(data);
+        return json.decode(response.body);
       } else {
-        throw Exception('Failed to load test: ${response.statusCode}');
+        throw Exception('Failed to start assessment: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error loading test: $e');
+      throw Exception('Error starting assessment: $e');
     }
   }
 
-  /// ================= SUBMIT RESULTS =================
-  static Future<void> submitTestResults({
-    required String testId,
-    required Map<String, int> answers,
-    required int rawScore,
-    required int maxScore,
-    required String interpretation,
-  }) async {
-    if (useMockData) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      log('Mock: Test results saved locally');
-      return;
-    }
+  // ... rest of your existing methods (answerQuestion, submitResults, etc.) ...
 
+  /// Answer a question and get the next one
+  static Future<Map<String, dynamic>> answerQuestion({
+    required String testType,
+    required String currentQuestionId,
+    required String answer,
+  }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/assessment/$testId/submit'),
-        headers: _headers,
+        Uri.parse('$baseUrl/api/assessment/answer'),
+        headers: await _getHeaders(),
         body: json.encode({
-          'test_id': testId,
-          'answers': answers,
-          'raw_score': rawScore,
-          'max_score': maxScore,
-          'interpretation': interpretation,
-          'submitted_at': DateTime.now().toIso8601String(),
+          'test_type': testType,
+          'current_question_id': currentQuestionId,
+          'answer': answer,
         }),
       );
 
-      if (response.statusCode != 200 && response.statusCode != 201) {
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to answer question: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error answering question: $e');
+    }
+  }
+
+  /// Submit final results
+  static Future<Map<String, dynamic>> submitResults({
+    required String testType,
+    required int score,
+    required String resultText,
+    required Map<String, dynamic> answers,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/assessment/submit'),
+        headers: await _getHeaders(),
+        body: json.encode({
+          'test_type': testType,
+          'score': score,
+          'result_text': resultText,
+          'answers': answers,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return json.decode(response.body);
+      } else {
         throw Exception('Failed to submit results: ${response.statusCode}');
       }
     } catch (e) {
@@ -111,100 +106,22 @@ class TestApiService {
     }
   }
 
-  /// ================= MOCK DATA =================
-  static Future<TestData> _loadMockTest(String testId) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+  static Future<List<dynamic>> getAssessmentHistory() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/assessment/history'),
+        headers: await _getHeaders(),
+      );
 
-    switch (testId) {
-      case 'baseline':
-        return TestData(
-          id: 'baseline',
-          title: 'Baseline Wellbeing',
-          subtitle: 'WHO-5 Well-Being Index',
-          icon: '🌱',
-          description: 'Understand your overall mental wellbeing right now.',
-          timeframe: 'Over the past 2 weeks...',
-          questionCount: 5,
-          estimatedTime: '1 minute',
-          maxScore: 25,
-          nextTestRoute: '/tests/anxiety-screening',
-          questions: [
-            TestQuestion(
-              id: 'q1',
-              text: 'I have felt cheerful and in good spirits.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time',
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-            TestQuestion(
-              id: 'q2',
-              text: 'I have felt calm and relaxed.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time',
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-            TestQuestion(
-              id: 'q3',
-              text: 'I have felt active and vigorous.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time',
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-            TestQuestion(
-              id: 'q4',
-              text: 'I woke up feeling fresh and rested.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time',
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-            TestQuestion(
-              id: 'q5',
-              text:
-                  'My daily life has been filled with things that interest me.',
-              type: 'scale',
-              options: [
-                'At no time',
-                'Some of the time',
-                'Less than half the time',
-                'More than half the time',
-                'Most of the time',
-                'All of the time',
-              ],
-              values: [0, 1, 2, 3, 4, 5],
-            ),
-          ],
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception(
+          'Failed to load assessment history: ${response.statusCode}',
         );
-
-      default:
-        throw Exception('Test not found: $testId');
+      }
+    } catch (e) {
+      throw Exception('Error loading assessment history: $e');
     }
   }
 }

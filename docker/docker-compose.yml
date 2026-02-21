@@ -13,13 +13,24 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: .
+    build: 
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
     ports:
       - '8000:8000'
     environment:
       DATABASE_URL: 'postgresql://admin:secret123@postgres:5432/mental_health_app'
     depends_on:
       - postgres
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    ports:
+      - '3000:80'
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:

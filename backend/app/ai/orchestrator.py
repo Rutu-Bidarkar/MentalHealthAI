@@ -36,6 +36,7 @@ class Orchestrator:
         if severity_value is None:
             return None
 
+        # Determine next level based on severity
         if severity_value <= 1:
             level = "low"
         elif severity_value == 2:
@@ -53,3 +54,22 @@ class Orchestrator:
                 return q
 
         return None
+
+    def analyze_results(self, test_type: str, score: int, num_questions: int):
+        """
+        Calculates interpretation based on total score and number of questions.
+        Normalizes score to handle dynamic question counts.
+        """
+        if num_questions == 0:
+            return "Minimal"
+
+        normalized_score = (score / (num_questions * 4)) * 100
+
+        if normalized_score < 25:
+            return "Minimal"
+        elif normalized_score < 50:
+            return "Mild"
+        elif normalized_score < 75:
+            return "Moderate"
+        else:
+            return "Severe"

@@ -1,18 +1,27 @@
 {
   "test_type": "stress",
-  "version": "1.0",
+  "version": "1.1",
   "questions": [
     {
       "id": "S1",
-      "text": "You wake up already feeling tired and overwhelmed, even before starting the day. How often does this happen?",
-      "tags": ["fatigue", "daily_stress"],
-      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "text": "In the last month, how often have you been upset because of something that happened unexpectedly?",
+      "tags": [
+        "unexpected",
+        "control"
+      ],
+      "options": [
+        "Never",
+        "Almost Never",
+        "Sometimes",
+        "Fairly Often",
+        "Very Often"
+      ],
       "severity_map": {
         "Never": 0,
-        "Rarely": 1,
+        "Almost Never": 1,
         "Sometimes": 2,
-        "Often": 3,
-        "Almost Always": 4
+        "Fairly Often": 3,
+        "Very Often": 4
       },
       "next": {
         "low": "S2",
@@ -20,18 +29,25 @@
         "high": "S4"
       }
     },
-
     {
       "id": "S2",
-      "text": "During the day, how easy is it for you to concentrate on one task?",
-      "tags": ["focus", "mental_load"],
-      "options": ["Very Easy", "Easy", "Neutral", "Hard", "Very Hard"],
+      "text": "How often have you felt that you were unable to control the important things in your life?",
+      "tags": [
+        "control"
+      ],
+      "options": [
+        "Never",
+        "Almost Never",
+        "Sometimes",
+        "Fairly Often",
+        "Very Often"
+      ],
       "severity_map": {
-        "Very Easy": 0,
-        "Easy": 1,
-        "Neutral": 2,
-        "Hard": 3,
-        "Very Hard": 4
+        "Never": 0,
+        "Almost Never": 1,
+        "Sometimes": 2,
+        "Fairly Often": 3,
+        "Very Often": 4
       },
       "next": {
         "low": "S5",
@@ -39,18 +55,25 @@
         "high": "S4"
       }
     },
-
     {
       "id": "S3",
-      "text": "When responsibilities pile up, how intense does the pressure feel?",
-      "tags": ["pressure", "workload"],
-      "options": ["Not intense", "Slightly intense", "Moderately intense", "Very intense", "Extremely intense"],
+      "text": "The pressure of daily tasks feels like a burden you can't carry.",
+      "tags": [
+        "burden"
+      ],
+      "options": [
+        "Never",
+        "Rarely",
+        "Sometimes",
+        "Often",
+        "Always"
+      ],
       "severity_map": {
-        "Not intense": 0,
-        "Slightly intense": 1,
-        "Moderately intense": 2,
-        "Very intense": 3,
-        "Extremely intense": 4
+        "Never": 0,
+        "Rarely": 1,
+        "Sometimes": 2,
+        "Often": 3,
+        "Always": 4
       },
       "next": {
         "low": "S5",
@@ -58,18 +81,25 @@
         "high": "S4"
       }
     },
-
     {
       "id": "S4",
-      "text": "Do you notice physical signs of stress like headaches, tight muscles, or restlessness?",
-      "tags": ["physical_stress"],
-      "options": ["Never", "Rarely", "Sometimes", "Often", "Almost Always"],
+      "text": "How often have you felt nervous and stressed?",
+      "tags": [
+        "nervousness"
+      ],
+      "options": [
+        "Never",
+        "Almost Never",
+        "Sometimes",
+        "Fairly Often",
+        "Very Often"
+      ],
       "severity_map": {
         "Never": 0,
-        "Rarely": 1,
+        "Almost Never": 1,
         "Sometimes": 2,
-        "Often": 3,
-        "Almost Always": 4
+        "Fairly Often": 3,
+        "Very Often": 4
       },
       "next": {
         "low": "S6",
@@ -77,56 +107,156 @@
         "high": "S7"
       }
     },
-
     {
       "id": "S5",
-      "text": "How well are you able to relax during your free time?",
-      "tags": ["relaxation"],
-      "options": ["Very well", "Well", "Okay", "Poorly", "Not at all"],
+      "text": "How often have you felt confident about your ability to handle your personal problems?",
+      "tags": [
+        "confidence",
+        "resilience"
+      ],
+      "options": [
+        "Very Often",
+        "Fairly Often",
+        "Sometimes",
+        "Almost Never",
+        "Never"
+      ],
       "severity_map": {
-        "Very well": 0,
-        "Well": 1,
-        "Okay": 2,
-        "Poorly": 3,
-        "Not at all": 4
-      },
-      "next": {
-        "low": "S7",
-        "medium": "S7",
-        "high": "S7"
-      }
-    },
-
-    {
-      "id": "S6",
-      "text": "Do you feel you have someone you can talk to when things feel overwhelming?",
-      "tags": ["support_system"],
-      "options": ["Always", "Often", "Sometimes", "Rarely", "Never"],
-      "severity_map": {
-        "Always": 0,
-        "Often": 1,
+        "Very Often": 0,
+        "Fairly Often": 1,
         "Sometimes": 2,
-        "Rarely": 3,
+        "Almost Never": 3,
         "Never": 4
       },
       "next": {
-        "low": "S7",
-        "medium": "S7",
+        "low": "S8",
+        "medium": "S6",
         "high": "S7"
       }
     },
-
+    {
+      "id": "S6",
+      "text": "How often have you felt that things were going your way?",
+      "tags": [
+        "optimism"
+      ],
+      "options": [
+        "Very Often",
+        "Fairly Often",
+        "Sometimes",
+        "Almost Never",
+        "Never"
+      ],
+      "severity_map": {
+        "Very Often": 0,
+        "Fairly Often": 1,
+        "Sometimes": 2,
+        "Almost Never": 3,
+        "Never": 4
+      },
+      "next": {
+        "low": "S8",
+        "medium": "S9",
+        "high": "S7"
+      }
+    },
     {
       "id": "S7",
-      "text": "Overall, how manageable does your stress feel right now?",
-      "tags": ["overall_stress"],
-      "options": ["Very manageable", "Manageable", "Neutral", "Hard to manage", "Unmanageable"],
+      "text": "How often have you been able to control irritations in your life?",
+      "tags": [
+        "irritation"
+      ],
+      "options": [
+        "Very Often",
+        "Fairly Often",
+        "Sometimes",
+        "Almost Never",
+        "Never"
+      ],
       "severity_map": {
-        "Very manageable": 0,
-        "Manageable": 1,
-        "Neutral": 2,
-        "Hard to manage": 3,
-        "Unmanageable": 4
+        "Very Often": 0,
+        "Fairly Often": 1,
+        "Sometimes": 2,
+        "Almost Never": 3,
+        "Never": 4
+      },
+      "next": {
+        "low": "S8",
+        "medium": "S9",
+        "high": "S10"
+      }
+    },
+    {
+      "id": "S8",
+      "text": "How often have you felt that you were on top of things?",
+      "tags": [
+        "coping"
+      ],
+      "options": [
+        "Very Often",
+        "Fairly Often",
+        "Sometimes",
+        "Almost Never",
+        "Never"
+      ],
+      "severity_map": {
+        "Very Often": 0,
+        "Fairly Often": 1,
+        "Sometimes": 2,
+        "Almost Never": 3,
+        "Never": 4
+      },
+      "next": {
+        "low": "S9",
+        "medium": "S9",
+        "high": "S10"
+      }
+    },
+    {
+      "id": "S9",
+      "text": "How often have you been angered because of things that were outside of your control?",
+      "tags": [
+        "anger"
+      ],
+      "options": [
+        "Never",
+        "Almost Never",
+        "Sometimes",
+        "Fairly Often",
+        "Very Often"
+      ],
+      "severity_map": {
+        "Never": 0,
+        "Almost Never": 1,
+        "Sometimes": 2,
+        "Fairly Often": 3,
+        "Very Often": 4
+      },
+      "next": {
+        "low": "S10",
+        "medium": "S10",
+        "high": "S10"
+      }
+    },
+    {
+      "id": "S10",
+      "text": "How often have you felt difficulties were piling up so high that you could not overcome them?",
+      "tags": [
+        "overwhelmed"
+      ],
+      "options": [
+        "Never",
+        "Almost Never",
+        "Sometimes",
+        "Fairly Often",
+        "Very Often"
+      ],
+      "severity_map": {
+        "Never": 0,
+        "Almost Never": 1,
+        "Sometimes": 2,
+        "Fairly Often": 3,
+        "Very Often": 4
       },
       "next": {
         "low": "END",
