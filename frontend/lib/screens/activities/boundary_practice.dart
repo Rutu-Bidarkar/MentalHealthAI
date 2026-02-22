@@ -173,6 +173,12 @@ class _BoundaryPracticeState extends State<BoundaryPractice> {
             }
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home_outlined, color: Colors.black),
+            onPressed: () => Navigator.pop(context, 'home'),
+          ),
+        ],
       ),
       body: _isSurveyComplete ? _buildChatInterface() : _buildSurveyInterface(),
     );

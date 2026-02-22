@@ -61,6 +61,10 @@ class _AngerReleaseState extends State<AngerRelease> with SingleTickerProviderSt
         leading: BackButton(color: _isDarkMode ? Colors.white : Colors.black),
         actions: [
           IconButton(
+            icon: Icon(Icons.home_outlined, color: _isDarkMode ? Colors.white : Colors.black),
+            onPressed: () => Navigator.pop(context, 'home'),
+          ),
+          IconButton(
             icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode, color: _isDarkMode ? Colors.white : Colors.black),
             onPressed: _toggleTheme,
           )
@@ -236,12 +240,7 @@ class _WriteBurnTabState extends State<WriteBurnTab> with TickerProviderStateMix
                       decoration: BoxDecoration(
                         color: _parchmentColor,
                         borderRadius: BorderRadius.circular(4),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)],
-                        image: const DecorationImage(
-                           image: NetworkImage("https://www.transparenttextures.com/patterns/aged-paper.png"), // Subtle noise if available, else fallback to color
-                           opacity: 0.1,
-                           fit: BoxFit.cover,
-                        )
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10)],
                       ),
                       child: TextField(
                         controller: _textController,
@@ -294,9 +293,10 @@ class _ScribbleThrowTabState extends State<ScribbleThrowTab> with TickerProvider
   List<DrawingPoint?> points = [];
   Color selectedColor = Colors.black; 
   late AnimationController _tossController;
+  late AnimationController _entryController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _rotationAnimation;
-  late Animation<Offset> _pathAnimation;
+  late Animation<Offset> _slideAnimation;
   late Animation<double> _morphAnimation; // 0.0 (Rect) -> 1.0 (Ball)
 
   final List<Color> colors = [
@@ -306,23 +306,23 @@ class _ScribbleThrowTabState extends State<ScribbleThrowTab> with TickerProvider
   @override
   void initState() {
     super.initState();
-    _tossController = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _tossController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _entryController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
     
-    // 1. Morph to ball & Shrink (0-50% time)
+    // 1. Morph to ball & Shrink to Nothing (0-100% time)
     _morphAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _tossController, curve: const Interval(0.0, 0.4, curve: Curves.easeInOut))
+      CurvedAnimation(parent: _tossController, curve: const Interval(0.0, 0.6, curve: Curves.easeInOut))
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.2).animate(
-      CurvedAnimation(parent: _tossController, curve: const Interval(0.0, 0.4, curve: Curves.easeInOut))
-    );
-    
-    // 2. Toss to Bin (Parabolic-ish) (20-100% time)
-    _pathAnimation = Tween<Offset>(begin: Offset.zero, end: const Offset(10.0, 10.0)).animate( // Fly off screen
-       CurvedAnimation(parent: _tossController, curve: const Interval(0.3, 1.0, curve: Curves.easeInQuad))
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _tossController, curve: const Interval(0.4, 1.0, curve: Curves.easeInBack))
     );
     
-    // 3. Rotate wildly
-    _rotationAnimation = Tween<double>(begin: 0.0, end: 10.0).animate(_tossController);
+    // 2. Entry Animation (Slide from Top)
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, -1.5), end: Offset.zero).animate(
+      CurvedAnimation(parent: _entryController, curve: Curves.easeOutBack)
+    );
+
+    _entryController.forward();
 
     _tossController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -330,7 +330,8 @@ class _ScribbleThrowTabState extends State<ScribbleThrowTab> with TickerProvider
           points.clear();
           _tossController.reset();
         });
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Discarded.")));
+        _entryController.reset();
+        _entryController.forward();
       }
     });
   }
@@ -338,6 +339,7 @@ class _ScribbleThrowTabState extends State<ScribbleThrowTab> with TickerProvider
   @override
   void dispose() {
     _tossController.dispose();
+    _entryController.dispose();
     super.dispose();
   }
 
@@ -384,26 +386,25 @@ class _ScribbleThrowTabState extends State<ScribbleThrowTab> with TickerProvider
           
           Expanded(
             child: AnimatedBuilder(
-              animation: _tossController,
+              animation: Listenable.merge([_tossController, _entryController]),
               builder: (context, child) {
-                 final morph = _morphAnimation.value; // 0 (Rect) -> 1 (Circle)
-                 final currentRadius = 16.0 * (1 - morph) + 150.0 * morph; // Morph to ball
+                 final morph = _morphAnimation.value;
+                 final currentRadius = 16.0 * (1 - morph) + 150.0 * morph;
                  
-                 return Transform.translate(
-                   offset: Offset(_pathAnimation.value.dx * 100, _pathAnimation.value.dy * 100), // Amplify offset
-                   child: Transform.rotate(
-                     angle: _rotationAnimation.value,
-                     child: Transform.scale(
-                       scale: _scaleAnimation.value,
-                       child: Container(
+                 return SlideTransition(
+                   position: _slideAnimation,
+                   child: Transform.scale(
+                     scale: _scaleAnimation.value,
+                     child: Container(
                          clipBehavior: Clip.hardEdge,
                          decoration: BoxDecoration(
                            color: const Color(0xFFFDFDFD),
                            borderRadius: BorderRadius.circular(currentRadius),
-                           boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8)],
+                           boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8)],
                          ),
                          child: GestureDetector(
                            onPanUpdate: (details) {
+                             if (_tossController.isAnimating || _entryController.isAnimating) return;
                              setState(() {
                                points.add(DrawingPoint(details.localPosition, selectedColor));
                              });
@@ -416,8 +417,7 @@ class _ScribbleThrowTabState extends State<ScribbleThrowTab> with TickerProvider
                          ),
                        ),
                      ),
-                   ),
-                 );
+                   );
               },
             ),
           ),

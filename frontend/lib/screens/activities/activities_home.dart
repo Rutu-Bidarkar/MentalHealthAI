@@ -6,6 +6,7 @@ import 'anger_release.dart';
 import 'video_player_screen.dart';
 import 'boundary_practice.dart';
 import 'gratitude_exchange.dart';
+import 'mood_rating_popup.dart';
 
 class ActivitiesPage extends StatelessWidget {
   const ActivitiesPage({super.key});
@@ -26,6 +27,12 @@ class ActivitiesPage extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Color(0xFF2D3748)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home_outlined),
+            onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -40,7 +47,7 @@ class ActivitiesPage extends StatelessWidget {
               description: 'Fastest stress relief technique.',
               icon: Icons.air,
               color: const Color(0xFF6B9BD1),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BreathingExercise())),
+              destination: const BreathingExercise(),
             ),
             _buildActivityCard(
               context,
@@ -49,7 +56,7 @@ class ActivitiesPage extends StatelessWidget {
               description: 'Validate and release your feelings.',
               icon: Icons.local_fire_department,
               color: const Color(0xFFE89E98),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AngerRelease())),
+              destination: const AngerRelease(),
             ),
             
             const SizedBox(height: 24),
@@ -61,11 +68,11 @@ class ActivitiesPage extends StatelessWidget {
               description: 'Trauma-informed gentle practice.',
               icon: Icons.self_improvement,
               color: const Color(0xFF7FC29B),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(
+              destination: VideoPlayerScreen(
                 title: 'Yoga for Anxiety',
                 videoId: 'bJJWArDfKA8', // Placeholder ID
                 description: 'A gentle yoga session to calm the nervous system.',
-              ))),
+              ),
             ),
             _buildActivityCard(
               context,
@@ -74,11 +81,11 @@ class ActivitiesPage extends StatelessWidget {
               description: 'Relieve tension from sitting.',
               icon: Icons.accessibility_new,
               color: const Color(0xFFF4C96F),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(
+              destination: VideoPlayerScreen(
                 title: 'Desk Stretches',
                 videoId: 'nZtbq2r750M', // Placeholder ID
                 description: 'Quick stretches to do right at your desk.',
-              ))),
+              ),
             ),
 
             const SizedBox(height: 24),
@@ -90,7 +97,7 @@ class ActivitiesPage extends StatelessWidget {
               description: 'Learn to say no effectively.',
               icon: Icons.shield,
               color: const Color(0xFF8B5CF6),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BoundaryPractice())),
+              destination: const BoundaryPractice(),
             ),
 
             const SizedBox(height: 24),
@@ -102,7 +109,7 @@ class ActivitiesPage extends StatelessWidget {
               description: 'Give & receive gratitude anonymously.',
               icon: Icons.volunteer_activism, // Hand holding heart
               color: const Color(0xFFEC4899),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GratitudeExchange())),
+              destination: const GratitudeExchange(),
             ),
              const SizedBox(height: 40),
           ],
@@ -132,7 +139,7 @@ class ActivitiesPage extends StatelessWidget {
     required String description,
     required IconData icon,
     required Color color,
-    required VoidCallback onTap,
+    required Widget destination,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -141,7 +148,7 @@ class ActivitiesPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         elevation: 0, // Flat design with shadow via Container
         child: InkWell(
-          onTap: onTap,
+          onTap: () => _showMoodRating(context, title: title, color: color, destination: destination),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -206,6 +213,46 @@ class ActivitiesPage extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showMoodRating(BuildContext context, {required String title, required Color color, required Widget destination}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => MoodRatingPopup(
+        title: "How are you feeling?",
+        question: "What are you hoping to feel after this activity?",
+        activityColor: color,
+        onCompleted: () async {
+          Navigator.pop(sheetContext); // Close Pre-Popup
+          
+          // Wait for activity to finish
+          final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
+          
+          // Post-activity rating
+          if (context.mounted) {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (postSheetContext) => MoodRatingPopup(
+                title: "How are you feeling now?",
+                question: "Did this activity help you feel better?",
+                activityColor: color,
+                isPost: true,
+                onCompleted: () {
+                  Navigator.pop(postSheetContext); // Close Post-Popup
+                  if (result == 'home') {
+                    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                  }
+                },
+              ),
+            );
+          }
+        },
       ),
     );
   }

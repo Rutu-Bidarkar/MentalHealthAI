@@ -155,6 +155,12 @@ class _BreathingExerciseState extends State<BreathingExercise> with TickerProvid
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(color: Color(0xFF2D3748)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home_outlined, color: Color(0xFF2D3748)),
+            onPressed: () => Navigator.pop(context, 'home'),
+          ),
+        ],
       ),
       body: Column(
         children: [
