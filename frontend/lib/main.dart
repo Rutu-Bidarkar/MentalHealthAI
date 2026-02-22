@@ -12,6 +12,7 @@ import 'screens/activities.dart';
 import 'screens/community.dart';
 import 'screens/test_results_provider.dart';
 import 'screens/consultant/consultant_shell.dart';
+import 'screens/screening/screening_page.dart';
 
 import 'services/theme_service.dart';
 
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
         '/consultant/dashboard': (context) => const ConsultantShell(initialIndex: 1),
         '/reports': (context) => Scaffold(appBar: AppBar(title: const Text('Reports')), body: const Center(child: Text('Reports Page'))),
         '/test-construction': (context) => Scaffold(appBar: AppBar(title: const Text('Mental Health Test')), body: const Center(child: Text('Under Construction'))),
+        '/screening': (context) => const ScreeningPage(),
       },
     );
   }

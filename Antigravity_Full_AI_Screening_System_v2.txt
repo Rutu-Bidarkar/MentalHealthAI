@@ -1,0 +1,345 @@
+
+
+
+ANTIGRAVITY
+AI-Powered Multi-Disorder Mental Health Screening System
+Full System Implementation Plan  —  v2.0
+
+Prepared For	Antigravity Development Team
+Scope	9 Disorder Categories | AI Report Engine | Flutter + API
+AI Engine	Claude API (Phase 1) ? Custom ML Model (Phase 2)
+User Modes	Self-report & Consultant-administered
+Output	Structured Clinical Report per Session
+Legal Status	Screening Only — Not Diagnostic
+
+1. What This System Does
+This system allows a user or consultant to complete a structured, multi-module screening battery covering 9 major mental health and neurodegenerative disorder categories. Once completed, all module scores are sent to the Claude API, which analyzes the pattern of responses across modules and generates a structured clinical report. The report tells the consultant which disorder categories show early indicators, at what severity level, and what the recommended next steps are.
+The system does not diagnose. It detects early warning patterns and produces a probability-weighted report that a licensed professional can act on. Think of it as an intelligent triage layer that sits between the user and clinical care.
+
+The core loop in one sentence:
+User completes targeted screening modules  ?  Scores sent to Claude API  ?  Claude analyzes cross-module patterns  ?  Structured report generated  ?  Consultant reviews and acts.
+
+2. Disorder Category Map — 9 Modules
+Each disorder category maps to a dedicated screening module with original questions inspired by validated instrument domains. The table below defines the full module architecture.
+
+#	Module / Disorder	Instrument Domains Inspired By	Key Symptom Areas	Items	Format
+M1	Depression & Anxiety	PHQ-9, GAD-7 domains	Low mood, anhedonia, worry, avoidance, somatic	12	Likert 0–4
+M2	Bipolar / Mania	MDQ, ASRM domains	Elevated mood, cycling, impulsivity, energy, sleep	11	Likert 0–4
+M3	Psychosis / Schizophrenia	PQ-B domains	Hallucinations, paranoia, disorganised thinking	11	Yes/No
+M4	ADHD	ASRS domains	Inattention, hyperactivity, impulsivity, executive function	12	Likert 0–4
+M5	OCD	OCI-R domains	Obsessive thoughts, compulsive behaviours, distress	10	Likert 0–4
+M6	PTSD	PCL-5 domains	Re-experiencing, avoidance, hyperarousal, numbing	12	Likert 0–4
+M7	Personality Disorders	MSI-BPD, PDQ domains	Identity instability, abandonment fear, impulsivity, splitting	12	Yes/No + Likert
+M8	Cognitive Decline	AD8, GPCOG, Mini-Cog domains	Memory, orientation, language, executive function, ADL	12 + 5 informant	Yes/No
+M9	Neurodegenerative
+(Alzheimer’s + Parkinson’s)	NPI domains, UPDRS-inspired, ADAS-Cog domains	Progressive memory loss, motor changes, behavioural shifts, sleep disturbance	12	Yes/No + Freq
+
+3. Complete Screening Question Banks
+All questions below are original compositions. None reproduce proprietary or licensed instrument items verbatim. Each question is tagged with its conceptual domain source for transparency.
+Module 1 — Depression & Anxiety  (Likert: 0=Never, 1=Rarely, 2=Sometimes, 3=Often, 4=Almost Always)
+#	Question	Domain Inspired By	Scale
+M1.1	Over the past two weeks, how often have you felt a persistent sense of sadness or emptiness that was difficult to shake?	PHQ-9: depressed mood	0–4
+M1.2	How often have you lost interest or pleasure in activities you normally enjoy?	PHQ-9: anhedonia	0–4
+M1.3	How often have you felt physically slowed down, fatigued, or drained of energy for no clear reason?	PHQ-9: energy/fatigue	0–4
+M1.4	How often have you had difficulty falling or staying asleep, or found yourself sleeping much more than usual?	PHQ-9: sleep	0–4
+M1.5	How often have you had trouble concentrating, remembering things, or making decisions?	PHQ-9: concentration	0–4
+M1.6	How often have you felt worthless, excessively guilty, or harshly critical of yourself?	PHQ-9: worthlessness	0–4
+M1.7	How often have you felt a persistent sense of nervousness, tension, or being on edge?	GAD-7: anxiety	0–4
+M1.8	How often have you found it difficult to control or stop worrying once it starts?	GAD-7: uncontrollable worry	0–4
+M1.9	How often have you felt restless or unable to sit still due to anxiety or tension?	GAD-7: restlessness	0–4
+M1.10	How often have you avoided situations, places, or people because they triggered anxiety or low mood?	GAD-7/PHQ-9: avoidance	0–4
+M1.11	How often have you experienced unexplained physical symptoms such as headaches, chest tightness, or stomach upset?	PHQ-9: somatic	0–4
+M1.12	How often have you felt that things will not get better, or that you have little to look forward to?	PHQ-9: hopelessness	0–4
+
+Scoring: Low 0–12 | Monitor 13–28 | Elevated 29+
+Module 2 — Bipolar / Mania  (Likert: 0=Never ? 4=Almost Always)
+#	Question	Domain Inspired By	Scale
+M2.1	How often have you experienced periods where your mood felt unusually elevated, expansive, or ‘high’ — clearly different from your normal self?	MDQ: elevated mood	0–4
+M2.2	How often do these elevated periods alternate with periods of low mood within the same week or month?	MDQ: cycling	0–4
+M2.3	How often have you felt a dramatically increased need to start new projects, pursue goals, or stay active?	ASRM: goal-directed activity	0–4
+M2.4	How often have you needed significantly less sleep than usual and still felt energetic or not tired?	ASRM: decreased sleep need	0–4
+M2.5	How often has your speech felt faster or more pressured — as if you couldn’t get your words out fast enough?	ASRM: pressured speech	0–4
+M2.6	How often have you acted impulsively in ways you later regretted — with money, relationships, or risky behaviour?	MDQ: impulsivity	0–4
+M2.7	How often have you felt unusually irritable or easily angered, beyond what felt proportionate to the situation?	ASRM: irritability	0–4
+M2.8	How often have you felt more self-confident or important than usual — as if you had special abilities or insights?	MDQ/ASRM: grandiosity	0–4
+M2.9	How often have your thoughts moved so quickly it was hard to slow them down or keep track?	ASRM: racing thoughts	0–4
+M2.10	How often have mood changes significantly disrupted your work, relationships, or ability to function?	MDQ: functional impact	0–4
+M2.11	How often have people close to you commented on significant changes in your behaviour or mood?	MDQ: observer report	0–4
+
+Scoring: Low 0–10 | Monitor 11–23 | Elevated 24+
+Module 3 — Psychosis / Schizophrenia Spectrum  (Yes=1, No=0)
+#	Question	Domain Inspired By	Format
+M3.1	Have you heard sounds, voices, or noises that others nearby did not seem to hear?	PQ-B: auditory hallucination	Yes/No
+M3.2	Have you seen things or had visual experiences that others around you did not seem to notice?	PQ-B: visual hallucination	Yes/No
+M3.3	Have you had a strong feeling that people are watching you, talking about you, or have a special interest in you?	PQ-B: paranoia/referential	Yes/No
+M3.4	Have you felt that ordinary events or objects had a special hidden meaning intended for you?	PQ-B: ideas of reference	Yes/No
+M3.5	Have you felt that your thoughts were being inserted into your mind by an outside force, or taken away?	PQ-B: thought insertion/withdrawal	Yes/No
+M3.6	Have you felt that your thoughts or feelings might be available to others without you speaking them aloud?	PQ-B: thought broadcast	Yes/No
+M3.7	Have you felt that someone or something outside yourself was controlling your actions or feelings?	PQ-B: passivity/control	Yes/No
+M3.8	Have you noticed that your thinking felt disorganised, jumbled, or hard to follow even to yourself?	PQ-B: disorganised thinking	Yes/No
+M3.9	Have you felt emotionally flat, detached, or unable to feel emotions you think you should feel?	PQ-B: flat affect	Yes/No
+M3.10	Have you become increasingly withdrawn from social situations or found social contact overwhelming?	PQ-B: social withdrawal	Yes/No
+M3.11	Have you had unusual sensory experiences — such as smelling or tasting things that others did not detect?	PQ-B: other-modality hallucination	Yes/No
+
+Scoring: Low 0 | Monitor 1–2 | Elevated 3+. Items M3.1–M3.4 flagged individually in AI report.
+Module 4 — ADHD  (Likert: 0=Never ? 4=Almost Always)
+#	Question	Domain Inspired By	Scale
+M4.1	How often do you have difficulty sustaining attention on tasks that require prolonged mental effort?	ASRS: inattention	0–4
+M4.2	How often do you make careless mistakes in work or tasks because you did not pay close enough attention to detail?	ASRS: attention to detail	0–4
+M4.3	How often do you find yourself easily distracted by unrelated thoughts or external stimuli?	ASRS: distractibility	0–4
+M4.4	How often do you lose or misplace things you need for daily tasks, such as keys, documents, or your phone?	ASRS: organisation	0–4
+M4.5	How often do you find it difficult to start a task, even when you know it’s important?	ASRS: initiation/procrastination	0–4
+M4.6	How often do you feel physically restless, as if you need to move or cannot stay in one place?	ASRS: hyperactivity	0–4
+M4.7	How often do you interrupt others mid-conversation or blurt out responses before they’ve finished speaking?	ASRS: impulsivity	0–4
+M4.8	How often do you find it hard to wait your turn in queues, conversations, or group settings?	ASRS: patience/impulsivity	0–4
+M4.9	How often do you feel overwhelmed by multiple tasks and have trouble prioritising them?	ASRS: executive function	0–4
+M4.10	How often do you forget appointments, commitments, or things you were asked to do?	ASRS: forgetfulness	0–4
+M4.11	How often do you have difficulty listening or following through, even when directly spoken to?	ASRS: listening/follow-through	0–4
+M4.12	How often do these patterns interfere significantly with your work, academic, or personal life?	ASRS: functional impact	0–4
+
+Scoring: Low 0–14 | Monitor 15–29 | Elevated 30+. Inattention (M4.1–5,M4.10–11) and Hyperactivity (M4.6–9,M4.12) subscores reported separately.
+Module 5 — OCD  (Likert: 0=Never ? 4=Almost Always)
+#	Question	Domain Inspired By	Scale
+M5.1	How often do you experience unwanted, intrusive thoughts, images, or urges that feel difficult to control?	OCI-R: obsessions	0–4
+M5.2	How often do these thoughts cause significant distress or feel inconsistent with your values?	OCI-R: thought distress	0–4
+M5.3	How often do you feel compelled to repeat behaviours or mental acts to reduce anxiety caused by these thoughts?	OCI-R: compulsions	0–4
+M5.4	How often do you check things repeatedly — locks, appliances, or completed work — even when you know it’s already been done?	OCI-R: checking	0–4
+M5.5	How often do you feel a need to arrange or organise objects in a specific way that feels urgent or distressing if not done?	OCI-R: ordering	0–4
+M5.6	How often do you feel contaminated or excessively concerned about germs, dirt, or being unclean?	OCI-R: contamination	0–4
+M5.7	How often do you wash your hands, body, or clean objects significantly more than most people would?	OCI-R: washing	0–4
+M5.8	How often do you collect or have difficulty discarding items even when they have no practical value?	OCI-R: hoarding	0–4
+M5.9	How often do these thoughts or behaviours take up an hour or more of your day?	OCI-R: time consumed	0–4
+M5.10	How often do these patterns significantly interfere with your daily life, relationships, or ability to work?	OCI-R: functional impact	0–4
+
+Scoring: Low 0–10 | Monitor 11–22 | Elevated 23+
+Module 6 — PTSD  (Likert: 0=Not at all ? 4=Extremely)
+#	Question	Domain Inspired By	Scale
+M6.1	Have you experienced or witnessed a distressing or traumatic event that still affects you?	PCL-5: trauma exposure	Yes/No
+M6.2	How often do unwanted memories, images, or flashbacks of distressing events come to mind without warning?	PCL-5: re-experiencing	0–4
+M6.3	How often do you have upsetting dreams or nightmares related to a distressing experience?	PCL-5: nightmares	0–4
+M6.4	How often do you feel as though a distressing event is happening again in the present moment?	PCL-5: dissociative reactions	0–4
+M6.5	How often do you go out of your way to avoid thoughts, feelings, places, or situations that remind you of a distressing event?	PCL-5: avoidance	0–4
+M6.6	How often do you feel emotionally numb, detached from others, or unable to feel positive emotions?	PCL-5: emotional numbing	0–4
+M6.7	How often do you feel persistently negative about yourself, others, or the world as a result of what happened?	PCL-5: negative cognitions	0–4
+M6.8	How often do you feel constantly on guard, watchful, or easily startled — as if danger is nearby?	PCL-5: hypervigilance	0–4
+M6.9	How often do you have difficulty sleeping due to distressing memories or a general sense of threat?	PCL-5: sleep disturbance	0–4
+M6.10	How often do you feel irritable, have angry outbursts, or act recklessly in ways connected to past distress?	PCL-5: irritability/recklessness	0–4
+M6.11	How often do you feel a loss of interest in activities or people that used to feel meaningful to you?	PCL-5: diminished interest	0–4
+M6.12	How often do these experiences significantly interfere with your daily life or relationships?	PCL-5: functional impact	0–4
+
+Note: M6.1 is a gating question. If No, remaining items still shown but AI report notes absence of identified trauma. Scoring (M6.2–12): Low 0–13 | Monitor 14–27 | Elevated 28+
+Module 7 — Personality Disorders  (Mixed format)
+This module screens primarily for Borderline Personality Disorder (BPD) pattern indicators, with secondary items covering general personality instability patterns. BPD is the most common and screenable personality disorder in community settings.
+#	Question	Domain Inspired By	Format
+M7.1	Do you have an intense fear of being abandoned or left, even when there is no clear sign it will happen?	MSI-BPD: abandonment fear	Yes/No
+M7.2	How often do your relationships swing between feeling extremely close and positive, then extremely negative or disappointing?	MSI-BPD: unstable relationships	0–4
+M7.3	How often does your sense of who you are — your identity, values, or goals — feel unstable or shift significantly?	MSI-BPD: identity disturbance	0–4
+M7.4	How often do you act impulsively in ways that feel harmful to yourself, such as unsafe behaviour, spending, or substance use?	MSI-BPD: impulsivity	0–4
+M7.5	Have you harmed yourself, or had thoughts of harming yourself, as a way to cope with overwhelming emotions?	MSI-BPD: self-harm	Yes/No
+M7.6	How often do your emotions feel overwhelming, shift rapidly, and feel out of proportion to the situation?	MSI-BPD: emotional instability	0–4
+M7.7	How often do you feel persistently empty, hollow, or as though something is fundamentally missing inside?	MSI-BPD: chronic emptiness	0–4
+M7.8	How often do you experience episodes of intense anger that feel difficult to control or understand?	MSI-BPD: intense anger	0–4
+M7.9	How often do you experience brief periods of feeling detached from yourself or your surroundings, as if things are unreal?	MSI-BPD: dissociation	0–4
+M7.10	Do you find it very difficult to trust others, or believe that people are generally well-meaning toward you?	PDQ: paranoid/trust	Yes/No
+M7.11	How often do you feel that you are fundamentally different from other people in a way that makes connection difficult?	PDQ: alienation	0–4
+M7.12	How often do these patterns cause significant distress or disruption in your relationships or daily functioning?	General: functional impact	0–4
+
+Scoring: Yes/No items count as 0 or 3 (weighted). Total range 0–42. Low 0–10 | Monitor 11–22 | Elevated 23+. M7.5 flagged as a safety item — triggers Tier 3 escalation regardless of total.
+Module 8 — Cognitive Decline  (Yes=1, No=0)
+#	Question	Domain Inspired By	Format
+M8.1	Have you noticed you are having more difficulty remembering recent events or conversations than you used to?	AD8: memory change	Yes/No
+M8.2	Do you find it harder to recall the names of people you know well?	AD8/GPCOG: name recall	Yes/No
+M8.3	Have you had trouble remembering appointments, dates, or planned tasks more than feels normal?	AD8: prospective memory	Yes/No
+M8.4	Do you sometimes lose track of the day, month, or year?	MoCA/GPCOG: orientation	Yes/No
+M8.5	Has it become harder to manage everyday tasks such as paying bills, cooking, or following instructions?	AD8: executive/ADL	Yes/No
+M8.6	Have you found it harder to follow along in conversations or written content that you would previously have managed easily?	MoCA: language	Yes/No
+M8.7	Do you sometimes have difficulty finding the right word when speaking, more than you used to?	MoCA: word-finding	Yes/No
+M8.8	Have you noticed changes in your ability to concentrate on a task for a sustained period?	Mini-Cog: attention	Yes/No
+M8.9	Have you repeated the same question or story to the same person without realising it?	AD8: repetition	Yes/No
+M8.10	Have you felt confused or disoriented in a familiar place or on a familiar route?	GPCOG: spatial orientation	Yes/No
+M8.11	Have friends or family expressed concern about your memory or thinking ability?	GPCOG: informant signal	Yes/No
+M8.12	Have you noticed a change in your ability to make decisions or exercise judgement compared to a few years ago?	AD8: judgement	Yes/No
+
+Scoring: Low 0–2 | Monitor 3–5 | Elevated 6+. Optional 5-item informant section: if informant score ?3 and self-report is Monitor, auto-escalate to Elevated.
+Module 9 — Neurodegenerative (Alzheimer’s + Parkinson’s combined)
+This module screens for progressive neurological change patterns. It includes items targeting Alzheimer’s-type memory and behavioural changes alongside Parkinson’s-type motor, autonomic, and sleep-related indicators. The AI model differentiates pattern clusters in its report.
+#	Question	Domain / Condition Signal	Format
+M9.1	Has your memory declined noticeably over the past year in a way that feels progressive rather than occasional?	Alzheimer’s: progressive memory	Yes/No
+M9.2	Have you had increasing difficulty recognising familiar faces, places, or objects?	Alzheimer’s: agnosia	Yes/No
+M9.3	Have you noticed significant personality or behavioural changes that feel out of character — such as apathy, aggression, or disinhibition?	Alzheimer’s/NPI: behavioural	Yes/No
+M9.4	Have you experienced episodes of confusion about where you are or what time period you are in?	Alzheimer’s: disorientation	Yes/No
+M9.5	Have you noticed a tremor or shaking in your hands, arms, or legs when at rest?	Parkinson’s: resting tremor	Yes/No
+M9.6	Have you experienced stiffness or rigidity in your limbs or body that makes movement difficult?	Parkinson’s: rigidity	Yes/No
+M9.7	Have you noticed your movements, walking pace, or everyday physical tasks have become significantly slower?	Parkinson’s: bradykinesia	Yes/No
+M9.8	Have you experienced loss of smell that is not explained by a cold or allergy?	Parkinson’s: anosmia (prodromal)	Yes/No
+M9.9	Have you experienced vivid or disturbing dreams in which you physically act out movements during sleep?	Parkinson’s: REM sleep behaviour	Yes/No
+M9.10	Have you or others noticed a significant change in your handwriting — such as it becoming smaller or harder to read?	Parkinson’s: micrographia	Yes/No
+M9.11	Have you experienced significant constipation or other changes in your digestive system that are unexplained?	Parkinson’s: autonomic (prodromal)	Yes/No
+M9.12	Have these changes progressed gradually over months or years rather than appearing suddenly?	Both: progressive onset	Yes/No
+
+Scoring: Items M9.1–4 cluster = Alzheimer’s signal. Items M9.5–11 cluster = Parkinson’s signal. M9.12 (progressive onset) acts as a weight multiplier in AI analysis. Low: 0–1 | Monitor: 2–3 | Elevated: 4+ per cluster.
+
+4. AI Analysis Engine — Claude API Integration
+After all selected modules are completed, the system sends the full session payload to the Claude API. Claude analyzes cross-module score patterns, identifies co-occurring signals, and generates a structured clinical report. This is the core intelligence layer of the system.
+4.1 Why Claude API Is the Right Phase 1 Choice
+No training data required. Claude already understands clinical psychology domains deeply.
+Handles nuance that rule-based systems cannot — e.g. a high PTSD score combined with a Monitor psychosis score suggests a different clinical picture than either in isolation.
+Report output is natural language, readable by a consultant without technical interpretation.
+Prompt can be updated without redeploying the app — iterate on report quality quickly.
+Phase 2 migration path: collect session data now, train a custom model later on real labelled outcomes.
+
+4.2 The Claude API Prompt Architecture
+The prompt sent to Claude must contain: the system role (clinician assistant), the full score payload as structured JSON, and an explicit instruction on report format. Below is the exact prompt template to use.
+
+SYSTEM PROMPT (send once, cached):
+You are a clinical decision-support assistant helping a licensed mental health consultant interpret a multi-module screening battery. Your role is to analyze score patterns across disorder categories, identify likely early-indicator clusters, note co-occurring signals, and produce a structured report. You do not diagnose. You produce probability-weighted clinical observations and recommended next steps. Always use careful, non-alarmist language. Always note that findings are screening signals only.
+USER PROMPT TEMPLATE (send per session):
+A user has completed a mental health screening battery. Below is their full score data. Please analyze the cross-module patterns and generate a structured clinical report using the format specified.
+SESSION DATA:
+{ [full JSON session payload — see Section 5] }
+Generate the report in exactly this structure:
+1. SUMMARY: 2–3 sentence overview of the most notable findings.
+2. DISORDER SIGNALS: For each module with Monitor or Elevated score, list: Disorder category | Score band | Key symptom clusters flagged | Clinical note.
+3. CO-OCCURRING PATTERNS: Note any combinations of module scores that together suggest a more specific or complex clinical picture.
+4. SAFETY FLAGS: List any critical items triggered (suicidal ideation, self-harm, psychosis items M3.1–3.4).
+5. RECOMMENDED NEXT STEPS: Specific, actionable referral suggestions for the consultant.
+6. DISCLAIMER: Standard screening-only disclaimer.
+
+4.3 API Call Implementation (Flutter / Dart)
+// In your Flutter service layer:
+Future<String> generateReport(Map<String, dynamic> sessionData) async {
+final response = await http.post(
+Uri.parse('https://api.anthropic.com/v1/messages'),
+headers: {
+'x-api-key': YOUR_API_KEY,
+'anthropic-version': '2023-06-01',
+'content-type': 'application/json',
+},
+body: jsonEncode({
+'model': 'claude-sonnet-4-6',
+'max_tokens': 2000,
+'system': SYSTEM_PROMPT,  // from Section 4.2
+'messages': [{'role': 'user', 'content': buildPrompt(sessionData)}]
+}),
+);
+return jsonDecode(response.body)['content'][0]['text'];
+}
+
+Important: Never call the Claude API directly from the Flutter client. Route all API calls through your backend server. This protects your API key and allows you to log sessions before the report is generated.
+
+5. Backend JSON Session Schema
+This is the complete session payload sent to your backend and forwarded to the Claude API. Every field is required unless marked optional.
+
+{
+  "session_id": "uuid-v4",
+  "created_at": "2025-01-01T10:00:00Z",
+  "mode": "self_report" | "consultant_administered",
+  "disclaimer_acknowledged": true,
+  "user_context": {                      // optional demographic context
+    "age_band": "18-25" | "26-35" | ...,
+    "prior_diagnosis": true | false | null
+  },
+  "escalation_tier": 1,                  // 1=None 2=Monitor 3=Elevated 4=Crisis
+  "safety_flags": ["M3.1", "M7.5"],       // any flagged critical items
+  "modules": {
+    "M1": { "completed": true, "score": 18, "band": "monitor",
+            "responses": {"M1.1":3,"M1.2":2,...} },
+    "M2": { "completed": true, "score": 26, "band": "elevated",
+            "responses": {"M2.1":4,"M2.2":3,...} },
+    "M3": { "completed": true, "score": 2, "band": "monitor",
+            "flagged_items": ["M3.1", "M3.3"],
+            "responses": {"M3.1":true,"M3.2":false,...} },
+    "M4": { "completed": false },          // not completed by this user
+    "M5": { "completed": true, "score": 8, "band": "low", ...},
+    "M6": { "completed": true, "score": 31, "band": "elevated",
+            "trauma_disclosed": true, ... },
+    "M7": { "completed": true, "score": 19, "band": "monitor",
+            "safety_item_M7.5": false, ... },
+    "M8": { "completed": true, "self_score": 4, "band": "monitor",
+            "informant_score": 3, "informant_completed": true },
+    "M9": { "completed": true,
+            "alzheimers_cluster_score": 2, "parkinsons_cluster_score": 4,
+            "progressive_onset": true, "band": "elevated" }
+  },
+  "report_generated": false,
+  "report_text": null
+}
+
+6. Escalation & Safety Framework
+Tier	Level	Trigger	System Action	UX Behaviour
+1	No Flag	All modules Low	Log session. Generate report. No alert.	Green result screen. Wellness resources optional.
+2	Monitor	Any module reaches Monitor band	Flag in DB. Generate AI report. Prompt GP discussion.	Amber screen. Encourage professional conversation.
+3	Elevated — Refer	Any module Elevated, OR M7.5 triggered	Flag in DB. Generate AI report. Push referral resources. Alert consultant if in session.	Red screen. Referral copy shown prominently. AI report unlocked for consultant.
+4	CRISIS	M1.12 extreme + M7.5 YES, OR any active suicidal ideation item	INTERRUPT. Block flow. Log critical event. Trigger crisis protocol immediately.	Full-screen crisis card. 988 + 911 shown. No further navigation until acknowledged.
+
+7. Sample AI-Generated Consultant Report
+The following is an example of the report Claude API would generate for a session with elevated scores across M1, M2, M6, and M9 (Parkinson’s cluster). This shows the consultant exactly what they receive.
+
+MENTAL HEALTH SCREENING REPORT — SESSION #A3F29B
+Generated by AI Analysis Engine | Screening Only — Not Diagnostic
+1. SUMMARY
+This session shows elevated indicators across Depression & Anxiety (M1), Bipolar/Mania (M2), and PTSD (M6), with a notable Parkinson’s-type neurological signal cluster in M9. The co-occurrence of elevated mood cycling with PTSD indicators warrants careful differential consideration. No active crisis items were triggered.
+2. DISORDER SIGNALS
+Depression & Anxiety (M1) — MONITOR (Score: 18/48) | Key clusters: Persistent low mood, anhedonia, sleep disturbance, concentration difficulty. Clinical note: Scores are significant but sub-threshold for Elevated. Monitor for progression, particularly items M1.2 and M1.4.
+Bipolar / Mania (M2) — ELEVATED (Score: 26/44) | Key clusters: Mood cycling, decreased sleep need, impulsivity, grandiosity. Clinical note: Pattern is consistent with hypomanic episode indicators. Cycling pattern (M2.2) combined with functional impact (M2.10) warrants priority evaluation.
+PTSD (M6) — ELEVATED (Score: 31/44) | Key clusters: Re-experiencing, hypervigilance, emotional numbing, sleep disturbance. Trauma disclosed (M6.1 = Yes). Clinical note: Score is in the clinically significant range. Avoidance and numbing subscores are particularly high.
+3. CO-OCCURRING PATTERNS
+The combination of elevated mood cycling (M2) with high PTSD indicators (M6) is clinically meaningful. Trauma-related mood dysregulation can mimic or co-occur with Bipolar II. The consultant should explore chronological onset — whether mood cycling predated the traumatic experience or emerged following it — before drawing conclusions about primary diagnosis direction.
+4. SAFETY FLAGS
+No Tier 4 crisis items triggered. M7.5 (self-harm) was not endorsed. Passive hopelessness item M1.12 scored 3 (Often) — recommend direct clinical inquiry about this in consultation.
+5. RECOMMENDED NEXT STEPS
+a) Priority referral to a psychiatrist or psychologist for structured clinical interview regarding Bipolar II and PTSD.
+b) Neurology consultation recommended given Parkinson’s cluster (M9.5, M9.6, M9.8, M9.9, M9.11 all endorsed). Progressive onset confirmed (M9.12 = Yes).
+c) Directly assess hopelessness and passive suicidal ideation at first clinical contact given M1.12 score.
+6. DISCLAIMER
+This report is generated from a self-report screening battery and is for educational and research purposes only. It does not constitute a clinical diagnosis and must not be used as the sole basis for any clinical decision. Results should be interpreted by a licensed healthcare professional in the context of a full clinical assessment.
+
+8. Flutter Developer Prompt — Copy-Paste Ready
+The following prompt is ready to hand to the Antigravity Flutter developer. It contains everything needed to implement the full system within the existing project.
+
+COPY-PASTE PROMPT FOR ANTIGRAVITY FLUTTER DEVELOPER:
+CONTEXT:
+We are adding a full multi-disorder mental health screening system to the existing Flutter app. When the ‘Take a Mental Health Test’ button is tapped, it navigates to a new ScreeningHomeScreen. Do not modify any existing screens or state management. Only add new files and wire the button.
+PHASE 1 — SCREENING HOME SCREEN:
+Show a mandatory disclaimer banner. User must check a box and tap ‘I Understand’ before any module is accessible. Disclaimer text: ‘This screening is for educational and research purposes only. It is not a diagnosis. If you are in crisis, call or text 988.’
+Below the disclaimer, display 9 disorder category cards in a scrollable list. Each card shows: module name, short neutral subtitle, estimated completion time, and a Start button. The 9 modules are: Depression & Anxiety (~4 min), Bipolar / Mania (~3 min), Psychosis & Unusual Experiences (~3 min), ADHD (~4 min), OCD (~3 min), PTSD (~4 min), Personality Patterns (~4 min), Memory & Everyday Thinking (~4 min), Neurological Changes (~3 min). User can complete any or all modules.
+PHASE 2 — MODULE SCREENS:
+Each module opens as a separate screen. Show one question at a time with a progress bar. For Likert questions, use a row of 5 labelled tap targets (Never / Rarely / Sometimes / Often / Almost Always). For Yes/No questions, use two large tap targets. Disable the Next button until a response is selected. Show Back and Next. On the final question, show ‘Complete Module’.
+PHASE 3 — SAFETY OVERRIDES:
+Module 3 (Psychosis): if items M3.1, M3.2, M3.3, or M3.4 are answered Yes, flag these in the session data but do not interrupt the flow. Module 7 (Personality): if item M7.5 is answered Yes, show a full-screen supportive card: ‘Thank you for sharing this. You don’t have to face this alone. Please speak with a professional or contact 988.’ Allow the user to continue after acknowledging. If active suicidal ideation is ever detected (via explicit item), show the full-screen 988 crisis card and block further navigation until acknowledged.
+PHASE 4 — RESULTS & AI REPORT:
+After completing all selected modules, show a ‘View My Results’ button. This POST-s the full session JSON (see schema in Section 5 of the implementation plan) to the backend endpoint POST /api/screening/session. The backend calls the Claude API with the session data and returns the structured report text. Display the report on a ReportScreen. Show each module’s band (Low/Monitor/Elevated) as a coloured row, then the full AI-generated report below. Add a ‘Share with Consultant’ button that generates a PDF or allows the report to be sent via the app’s existing share mechanism.
+DESIGN RULES:
+Match the existing app theme and typography throughout. No new design system.
+Question screens: clean, minimal, no illustrations or decorative elements.
+Category cards: subtle icon per module (brain, heart, lightning bolt, etc.), your choice.
+Report screen: use green / amber / red colour coding for band indicators. Report text in readable body font.
+DO NOT TOUCH:
+Any existing screen, navigation route, state management, or API service outside of what is explicitly described above. Only add new files. Wire the existing button by adding a Navigator.push call to the new ScreeningHomeScreen route.
+
+9. Phase 2 — Custom ML Model Roadmap
+Once you have accumulated real session data with consultant-labelled outcomes, you can train a custom model to replace the Claude API call. This makes the system faster, cheaper, and more accurate for your specific population.
+
+Phase	When	What to Build	Data Required
+Phase 1	Now — Launch	Claude API integration as described. Collect and store all session data with consultant feedback field.	0 sessions needed to start
+Phase 2a	~500+ labelled sessions	Train a multi-label classifier (e.g. XGBoost or a fine-tuned BERT variant) on module scores ? disorder probability output.	500+ sessions with consultant-confirmed outcome labels
+Phase 2b	~2000+ sessions	Replace Claude API report generation with custom model. Use Claude API only for edge cases and complex co-occurring patterns.	2000+ labelled sessions with follow-up outcome data
+
+Critical: Add a consultant_feedback field to every session record from day one. After the consultant reviews the AI report, they should be able to confirm, reject, or adjust the flagged disorders. This labelled data is your future training set.
+
+10. Licensing Compliance Summary
+Instrument	Status	This Project’s Compliance Position
+MoCA	LICENSED	Not used. Domain types (memory recall, orientation) inspired M8 questions with completely original wording.
+MMSE	LICENSED	Not used in any form.
+C-SSRS Full	LICENSED	Not used. Safety escalation flow concept only. All items original.
+PHQ-9 / GAD-7	Open Access	Domain structure inspired M1. All 12 questions are original compositions. No verbatim reproduction.
+MDQ / ASRM	Open Access	Domain structure inspired M2. All 11 questions original.
+PQ-B	Open Access	Domain structure inspired M3. All 11 questions original.
+ASRS (ADHD)	Open Access	Domain structure inspired M4. All 12 questions original.
+OCI-R	Open Access	Domain structure inspired M5. All 10 questions original.
+PCL-5	Open Access	Domain structure inspired M6. All 12 questions original.
+MSI-BPD / PDQ	Open Access	Domain structure inspired M7. All 12 questions original.
+AD8 / GPCOG / Mini-Cog	Free to use	Concept and domain structure inspired M8. All questions original. Informant section structure inspired by GPCOG two-stage model.
+NPI / UPDRS / ADAS-Cog	Reference only	Domain clusters (tremor, rigidity, memory, behaviour) inspired M9 item selection. All 12 questions original.
+
+

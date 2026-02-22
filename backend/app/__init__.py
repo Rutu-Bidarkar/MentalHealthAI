@@ -11,5 +11,8 @@ def create_app():
     from .routes import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
+    from .ai.report_generator import report_bp
+    app.register_blueprint(report_bp)
+
     return app
 

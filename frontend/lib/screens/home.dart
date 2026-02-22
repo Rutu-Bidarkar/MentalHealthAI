@@ -527,7 +527,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
          const SizedBox(height: 16),
          HoverButton(
-           onPressed: () => Navigator.pushNamed(context, '/test-construction'),
+           onPressed: () => Navigator.pushNamed(context, '/screening'),
            label: "Take a Mental Health Test",
            icon: Icons.assignment_outlined,
            gradient: AppGradients.ocean,
